@@ -1,0 +1,11 @@
+{
+    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
+    "version": "1.0.0",
+    "metadata": {
+        "title": "Minimal Example",
+        "description": "A minimal valid JATS table"
+    },
+    "columns": [],
+    "views": [],
+    "rows": []
+}

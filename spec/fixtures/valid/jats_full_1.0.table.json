@@ -1,0 +1,107 @@
+{
+    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
+    "version": "1.0.0",
+    "metadata": {
+        "title": "Full Example",
+        "description": "A comprehensive JATS table with all features"
+    },
+    "policy": {
+        "permissions": {
+            "allowAgentRead": true,
+            "allowAgentCreate": true,
+            "allowAgentUpdate": false,
+            "allowAgentDelete": false
+        }
+    },
+    "columns": [
+        {
+            "id": "col_A1B",
+            "name": "Task",
+            "type": "text",
+            "description": "The name of the task",
+            "display": {
+                "width": 200
+            },
+            "constraints": {
+                "required": true
+            }
+        },
+        {
+            "id": "col_C2D",
+            "name": "Status",
+            "type": "select",
+            "constraints": {
+                "options": [
+                    {
+                        "value": "Todo",
+                        "color": "gray"
+                    },
+                    {
+                        "value": "Doing",
+                        "color": "blue"
+                    },
+                    {
+                        "value": "Done",
+                        "color": "green"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "col_E3F",
+            "name": "Due Date",
+            "type": "date"
+        },
+        {
+            "id": "col_G4H",
+            "name": "Verified",
+            "type": "boolean"
+        }
+    ],
+    "views": [
+        {
+            "id": "view_X9Z",
+            "name": "Active Tasks",
+            "description": "Tasks that are not done",
+            "filters": [
+                {
+                    "id": "flt_Y8W",
+                    "columnId": "col_C2D",
+                    "operator": "isNot",
+                    "value": "Done"
+                }
+            ],
+            "sorts": [
+                {
+                    "columnId": "col_E3F",
+                    "direction": "asc"
+                }
+            ],
+            "hiddenColumns": [],
+            "columnOrder": [
+                "col_A1B",
+                "col_C2D",
+                "col_E3F",
+                "col_G4H"
+            ]
+        }
+    ],
+    "rows": [
+        {
+            "id": "0123456789ABC",
+            "cells": {
+                "col_A1B": "Buy milk",
+                "col_C2D": "Todo",
+                "col_G4H": false
+            }
+        },
+        {
+            "id": "0123456789ABD",
+            "cells": {
+                "col_A1B": "Walk dog",
+                "col_C2D": "Doing",
+                "col_G4H": true
+            }
+        }
+    ]
+}

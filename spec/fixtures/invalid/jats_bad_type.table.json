@@ -1,0 +1,17 @@
+{
+    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
+    "version": "1.0.0",
+    "metadata": {
+        "title": "Invalid Example",
+        "description": "Bad column type"
+    },
+    "columns": [
+        {
+            "id": "col_A1B",
+            "name": "Bad Col",
+            "type": "invalid_type"
+        }
+    ],
+    "views": [],
+    "rows": []
+}

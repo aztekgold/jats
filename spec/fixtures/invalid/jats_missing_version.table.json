@@ -1,0 +1,10 @@
+{
+    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
+    "metadata": {
+        "title": "Invalid Example",
+        "description": "Missing version field"
+    },
+    "columns": [],
+    "views": [],
+    "rows": []
+}
