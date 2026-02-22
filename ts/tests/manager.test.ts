@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { JatsManager } from "../src/manager";
 import { JatsAgent } from "../src/agent";
 import { validateJats } from "../src/migrate";
@@ -7,9 +7,57 @@ describe("JatsManager", () => {
     it("should initialize with a default schema", () => {
         const manager = new JatsManager();
         const schema = manager.getJats();
-        expect(schema.version).toBe("1.0.0");
+        expect(schema.version).toBe("jats-1.0.0");
         expect(schema.columns).toHaveLength(0);
         expect(schema.rows).toHaveLength(0);
+    });
+
+    describe("ID Collision Prevention", () => {
+        it("should prevent column ID collisions", () => {
+            const manager = new JatsManager();
+
+            // Math.random() is used to generate the 3 char suffix.
+            // We'll mock it to return the same value twice, then a different value.
+            let callCount = 0;
+            const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+                callCount++;
+                // 0.5 * 36 is 18 (s). So this produces "s" repeated 3 times.
+                // e.g. "col_sss"
+                if (callCount <= 6) return 0.5;
+                // Then it will produce "a" repeated 3 times (0.27 * 36 = ~10 -> "a")
+                return 0.27;
+            });
+
+            manager.addColumn({ name: "Col 1", type: "text" }); // Gets col_sss
+            const col2 = manager.addColumn({ name: "Col 2", type: "text" }); // Collides, loops, gets col_aaa
+
+            expect(col2.id).not.toBe("col_sss");
+
+            randomSpy.mockRestore();
+        });
+
+        it("should prevent row ID collisions", () => {
+            const manager = new JatsManager();
+            manager.addColumn({ name: "Col 1", type: "text" });
+
+            // Date.now() controls the 9 char prefix. Math.random controls the 3 char suffix.
+            const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(1600000000000); // Fixed time
+
+            let callCount = 0;
+            const randomSpy = vi.spyOn(Math, 'random').mockImplementation(() => {
+                callCount++;
+                if (callCount <= 6) return 0.5; // "sss"
+                return 0.27; // "aaa"
+            });
+
+            const row1 = manager.addRow({}); // Time + sss
+            const row2 = manager.addRow({}); // Collides, loops, gets Time + aaa
+
+            expect(row1.id).not.toBe(row2.id);
+
+            nowSpy.mockRestore();
+            randomSpy.mockRestore();
+        });
     });
 
     it("should add a column successfully", () => {

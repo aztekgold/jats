@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from jats.manager import JatsManager
 from jats.tools import JatsAgentTooling
 
@@ -22,6 +23,32 @@ def test_add_row():
     assert len(row.id) == 12
     assert len(manager.get_jats().rows) == 1
     assert row.cells[col.id] == "Bob"
+
+def test_prevent_col_id_collision():
+    manager = JatsManager()
+    
+    # Mock to return the same ID twice, then a new one
+    with patch('jats.manager.generate_col_id', side_effect=["col_123", "col_123", "col_456"]):
+        manager.add_column(name="Col 1", type="text")
+        
+        # This insertion would collide with "col_123", so it should loop and draw "col_456"
+        col2 = manager.add_column(name="Col 2", type="text")
+        
+        assert col2.id == "col_456"
+        assert len(manager.get_jats().columns) == 2
+
+def test_prevent_row_id_collision():
+    manager = JatsManager()
+    
+    # Mock to return the same ID twice, then a new one
+    with patch('jats.manager.generate_row_id', side_effect=["000000000abc", "000000000abc", "000000000xyz"]):
+        manager.add_row({})
+        
+        # This insertion would collide with "000000000abc", so it should loop and draw "000000000xyz"
+        row2 = manager.add_row({})
+        
+        assert row2.id == "000000000xyz"
+        assert len(manager.get_jats().rows) == 2
 
 def test_crud_columns():
     manager = JatsManager()

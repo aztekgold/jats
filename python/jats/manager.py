@@ -36,8 +36,12 @@ class JatsManager:
     # --- Column Management ---
 
     def add_column(self, name: str, type: str, **kwargs) -> JatsColumn:
+        new_id = generate_col_id()
+        while any(c.id == new_id for c in self.schema.columns):
+            new_id = generate_col_id()
+
         new_col = JatsColumn(
-            id=generate_col_id(),
+            id=new_id,
             name=name,
             type=type, # type: ignore - validated by Pydantic
             **kwargs
@@ -67,8 +71,12 @@ class JatsManager:
     # --- Row Management ---
 
     def add_row(self, cells: Dict[str, Any]) -> JatsRow:
+        new_id = generate_row_id()
+        while any(r.id == new_id for r in self.schema.rows):
+            new_id = generate_row_id()
+
         new_row = JatsRow(
-            id=generate_row_id(),
+            id=new_id,
             cells=cells
         )
         self.schema.rows.append(new_row)
@@ -80,8 +88,12 @@ class JatsManager:
     # --- View Management ---
 
     def create_view(self, name: str) -> JatsView:
+        new_id = generate_view_id()
+        while any(v.id == new_id for v in self.schema.views):
+            new_id = generate_view_id()
+
         new_view = JatsView(
-            id=generate_view_id(),
+            id=new_id,
             name=name,
             filters=[],
             sorts=[],

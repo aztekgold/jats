@@ -54,8 +54,13 @@ export class JatsManager {
     // --- Column Management ---
 
     public addColumn(column: Omit<JatsColumn, "id">): JatsColumn {
+        let newId = generateColId();
+        while (this.schema.columns.find((c) => c.id === newId)) {
+            newId = generateColId();
+        }
+
         const newCol: JatsColumn = {
-            id: generateColId(),
+            id: newId,
             ...column,
         };
         // Validate
@@ -133,8 +138,13 @@ export class JatsManager {
     // --- Row Management ---
 
     public addRow(cells: Record<string, any>): JatsRow {
+        let newId = generateRowId();
+        while (this.schema.rows.find((r) => r.id === newId)) {
+            newId = generateRowId();
+        }
+
         const newRow: JatsRow = {
-            id: generateRowId(),
+            id: newId,
             cells: cells,
         };
         // Validate against column constraints
@@ -169,8 +179,13 @@ export class JatsManager {
     // --- View Management ---
 
     public createView(name: string): JatsView {
+        let newId = generateViewId();
+        while (this.schema.views.find((v) => v.id === newId)) {
+            newId = generateViewId();
+        }
+
         const newView: JatsView = {
-            id: generateViewId(),
+            id: newId,
             name,
             description: "",
             filters: [],
