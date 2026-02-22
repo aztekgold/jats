@@ -1,14 +1,14 @@
-export const CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+export const BASE36_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 /**
- * Encodes a number into a Crockford Base32 string of a specific length.
+ * Encodes a number into a Base36 string of a specific length.
  */
-export function encodeBase32(value: number, length: number): string {
+export function encodeBase36(value: number, length: number): string {
     let result = "";
     let n = value;
     while (n > 0) {
-        result = CROCKFORD_ALPHABET[n % 32] + result;
-        n = Math.floor(n / 32);
+        result = BASE36_ALPHABET[n % 36] + result;
+        n = Math.floor(n / 36);
     }
     return result.padStart(length, "0");
 }
@@ -19,18 +19,18 @@ export function encodeBase32(value: number, length: number): string {
 export function random3Char(): string {
     let result = "";
     for (let i = 0; i < 3; i++) {
-        const randomIndex = Math.floor(Math.random() * 32);
-        result += CROCKFORD_ALPHABET[randomIndex];
+        const randomIndex = Math.floor(Math.random() * 36);
+        result += BASE36_ALPHABET[randomIndex];
     }
     return result;
 }
 
 /**
- * JATS Row ID: 10 Chars Time (Crockford) + 3 Chars Random
+ * JATS Row ID: 9 Chars Time (Base36) + 3 Chars Random
  */
 export function generateRowId(): string {
     const timestamp = Date.now();
-    return encodeBase32(timestamp, 10) + random3Char();
+    return encodeBase36(timestamp, 9) + random3Char();
 }
 
 /**

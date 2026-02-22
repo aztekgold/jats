@@ -7,10 +7,10 @@ import { z } from "zod";
 
 // --- Base Types ---
 
-// Base32 string
-export const JatsBase32Schema = z.string();
+// Base36 string
+export const JatsBase36Schema = z.string().length(12).regex(/^[a-z0-9]+$/);
 
-export type JatsBase32 = z.infer<typeof JatsBase32Schema>;
+export type JatsBase36 = z.infer<typeof JatsBase36Schema>;
 
 export const JatsColumnTypeSchema = z.enum([
     "text",
@@ -90,7 +90,7 @@ export type JatsView = z.infer<typeof JatsViewSchema>;
 // --- Row Schema ---
 
 export const JatsRowSchema = z.object({
-    id: JatsBase32Schema, // 10 Time + 3 Random (Crockford Base32)
+    id: JatsBase36Schema, // 9 Time + 3 Random (Base36 alphanumeric)
     cells: z.record(z.string(), z.any()), // Keyed by col_id
 });
 

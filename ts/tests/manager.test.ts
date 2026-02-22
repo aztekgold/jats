@@ -15,7 +15,7 @@ describe("JatsManager", () => {
     it("should add a column successfully", () => {
         const manager = new JatsManager();
         const col = manager.addColumn({ name: "Name", type: "text" });
-        expect(col.id).toMatch(/^col_[0-9A-Z]{3}$/);
+        expect(col.id).toMatch(/^col_[a-z0-9]{3}$/);
         expect(manager.getJats().columns).toHaveLength(1);
     });
 
@@ -23,7 +23,8 @@ describe("JatsManager", () => {
         const manager = new JatsManager();
         const col = manager.addColumn({ name: "Name", type: "text" });
         const row = manager.addRow({ [col.id]: "Alice" });
-        expect(row.id).toHaveLength(13); // 10 time + 3 random
+        expect(row.id).toHaveLength(12); // 9 time + 3 random
+        expect(row.id).toMatch(/^[a-z0-9]+$/); // Base36
         expect(manager.getJats().rows).toHaveLength(1);
         expect(row.cells[col.id]).toBe("Alice");
     });

@@ -7,7 +7,7 @@
     },
     "columns": [
         {
-            "id": "col_A1B",
+            "id": "col_a1b",
             "name": "Bad Col",
             "type": "invalid_type"
         }

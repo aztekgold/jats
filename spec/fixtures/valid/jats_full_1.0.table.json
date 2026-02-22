@@ -15,7 +15,7 @@
     },
     "columns": [
         {
-            "id": "col_A1B",
+            "id": "col_a1b",
             "name": "Task",
             "type": "text",
             "description": "The name of the task",
@@ -27,7 +27,7 @@
             }
         },
         {
-            "id": "col_C2D",
+            "id": "col_c2d",
             "name": "Status",
             "type": "select",
             "constraints": {
@@ -48,59 +48,59 @@
             }
         },
         {
-            "id": "col_E3F",
+            "id": "col_e3f",
             "name": "Due Date",
             "type": "date"
         },
         {
-            "id": "col_G4H",
+            "id": "col_g4h",
             "name": "Verified",
             "type": "boolean"
         }
     ],
     "views": [
         {
-            "id": "view_X9Z",
+            "id": "view_x9z",
             "name": "Active Tasks",
             "description": "Tasks that are not done",
             "filters": [
                 {
-                    "id": "flt_Y8W",
-                    "columnId": "col_C2D",
+                    "id": "flt_y8w",
+                    "columnId": "col_c2d",
                     "operator": "isNot",
                     "value": "Done"
                 }
             ],
             "sorts": [
                 {
-                    "columnId": "col_E3F",
+                    "columnId": "col_e3f",
                     "direction": "asc"
                 }
             ],
             "hiddenColumns": [],
             "columnOrder": [
-                "col_A1B",
-                "col_C2D",
-                "col_E3F",
-                "col_G4H"
+                "col_a1b",
+                "col_c2d",
+                "col_e3f",
+                "col_g4h"
             ]
         }
     ],
     "rows": [
         {
-            "id": "0123456789ABC",
+            "id": "123456789abc",
             "cells": {
-                "col_A1B": "Buy milk",
-                "col_C2D": "Todo",
-                "col_G4H": false
+                "col_a1b": "Buy milk",
+                "col_c2d": "Todo",
+                "col_g4h": false
             }
         },
         {
-            "id": "0123456789ABD",
+            "id": "123456789abd",
             "cells": {
-                "col_A1B": "Walk dog",
-                "col_C2D": "Doing",
-                "col_G4H": true
+                "col_a1b": "Walk dog",
+                "col_c2d": "Doing",
+                "col_g4h": true
             }
         }
     ]
