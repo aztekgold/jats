@@ -20,7 +20,7 @@ export class JatsManager {
         if (initialSchema) {
             // Validate provided schema, filling in defaults if necessary
             this.schema = JatsSchemaSchema.parse({
-                version: "1.0.0",
+                version: "jats-1.0.0",
                 metadata: {
                     title: "Untitled Table",
                     description: "",
@@ -32,7 +32,7 @@ export class JatsManager {
             });
         } else {
             this.schema = {
-                version: "1.0.0",
+                version: "jats-1.0.0",
                 metadata: {
                     title: "New Table",
                     description: "Created by JatsManager",

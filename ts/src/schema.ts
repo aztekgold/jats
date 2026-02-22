@@ -99,7 +99,7 @@ export type JatsRow = z.infer<typeof JatsRowSchema>;
 // --- Main JATS Schema ---
 
 export const JatsSchemaSchema = z.object({
-    version: z.literal("1.0.0"),
+    version: z.literal("jats-1.0.0"),
     metadata: z.object({
         title: z.string(),
         description: z.string().optional(),

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { JatsSchema, JatsSchemaSchema, JatsColumn, JatsRow, JatsColumnType, JatsOption } from './schema';
-import { generateRowId } from './utils';
+import { JatsSchema, JatsSchemaSchema, JatsColumn, JatsRow, JatsColumnType, JatsOption } from '../schema';
+import { generateRowId, generateColId } from '../utils';
 
 function upgradeTable(inputPath: string, outputPath: string) {
     console.log(`Reading legacy v0.1 file from ${inputPath}...`);
@@ -12,6 +12,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
 
     const newColumns: JatsColumn[] = [];
     const colTypes: Record<string, string> = {};
+    const idMap: Record<string, string> = {};
 
     // Map columns
     for (const legacyCol of legacyData.columns || []) {
@@ -34,6 +35,8 @@ function upgradeTable(inputPath: string, outputPath: string) {
         }
 
         colTypes[legacyCol.id] = legacyCol.type;
+        const normalizedId = generateColId();
+        idMap[legacyCol.id] = normalizedId;
 
         const options: JatsOption[] = (legacyCol.typeOptions?.options || []).map((opt: any) => ({
             value: opt.value,
@@ -41,7 +44,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
         }));
 
         const newCol: JatsColumn = {
-            id: legacyCol.id as `col_${string}`,
+            id: normalizedId as `col_${string}`,
             name: legacyCol.name,
             type: newType,
             display: {
@@ -70,6 +73,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
         for (const cell of legacyRow) {
             let val = cell.value;
             const lType = colTypes[cell.column];
+            const normalizedColId = idMap[cell.column] || cell.column;
 
             // Clean up values based on type
             if (lType === "checkbox") {
@@ -79,7 +83,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
             }
 
             if (val !== undefined) {
-                cells[cell.column] = val;
+                cells[normalizedColId] = val;
             }
         }
 
@@ -91,7 +95,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
 
     // Construct final schema
     const jatsData: JatsSchema = {
-        version: "1.0.0",
+        version: "jats-1.0.0",
         metadata: {
             title: "Migrated Table",
             description: "Upgraded from v0.1 format"
@@ -113,8 +117,8 @@ function upgradeTable(inputPath: string, outputPath: string) {
     console.log(`Successfully wrote v1.0.0 table strictly matching schema to ${outputPath} !`);
 }
 
-const inputPath = process.argv[2] || path.join(__dirname, '../../tmp/v0.1.table.json');
-const outputPath = process.argv[3] || path.join(__dirname, '../../tmp/v1.0.table.json');
+const inputPath = process.argv[2] || path.join(__dirname, '../../../tmp/v0.1.table.json');
+const outputPath = process.argv[3] || path.join(__dirname, '../../../tmp/v1.0.table.json');
 
 try {
     upgradeTable(inputPath, outputPath);
