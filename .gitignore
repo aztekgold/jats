@@ -11,3 +11,4 @@ patch_agent.js
 patch_agent_test.js
 patch_agent_option.js
 debug_openai.json
+update_fixtures.js
