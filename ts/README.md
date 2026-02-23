@@ -12,31 +12,31 @@ npm install @aztekgold/agentable
 
 This package exposes the core schemas, ID generation utilities, an agent interface wrapper, and standard table managing abstractions for AGENTABLE.
 
-### `AgentableManager`
+### `Manager`
 An abstraction over the data store to safely manipulate rows, columns, and views while maintaining AGENTABLE schema constraints.
 
 ```typescript
-import { AgentableManager } from "agentable";
+import { Manager } from "agentable";
 
 // ... initialize manager with table data ...
 ```
 
-### `AgentableAgent`
+### `Agent`
 A toolset used to quickly expose AGENTABLE schema logic safely to Large Language Models formatted specifically for your AI SDK.
 
 ```typescript
-import { AgentableAgent } from "agentable";
+import { Agent } from "agentable";
 
 // Define agent with specific read/write capabilities based on AGENTABLE policy
 ```
 
-### `AgentableTypes`
+### `Types`
 TypeScript interfaces for columns, rows, views, and core AGENTABLE components.
 
 ```typescript
-import { AgentableTypes } from "agentable";
+import { Types } from "agentable";
 
-const myColumn: AgentableTypes.AgentableColumn = {
+const myColumn: Types.AgentableColumn = {
   id: "col_a1b",
   name: "Status",
   type: "select"
@@ -45,7 +45,7 @@ const myColumn: AgentableTypes.AgentableColumn = {
 
 ### Other Utilities
 ```typescript
-import { validateAgentable, migrateAgentable } from "agentable";
+import { Validate, Migrate } from "agentable";
 
 // Apply schema validation or migrations to raw JSON parsed data
 ```

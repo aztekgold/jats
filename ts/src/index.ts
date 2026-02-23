@@ -4,9 +4,9 @@ import { validateAgentable, migrateAgentable } from "./migrate";
 import * as AgentableTypes from "./schema";
 
 export {
-    AgentableManager,
-    AgentableAgent,
-    validateAgentable,
-    migrateAgentable,
-    AgentableTypes
+    AgentableManager as Manager,
+    AgentableAgent as Agent,
+    validateAgentable as Validate,
+    migrateAgentable as Migrate,
+    AgentableTypes as Types
 };
