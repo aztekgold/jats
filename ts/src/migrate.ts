@@ -1,11 +1,11 @@
-import { JatsSchema, JatsSchemaSchema } from "./schema";
+import { AgentableSchema, AgentableSchemaSchema } from "./schema";
 
 /**
- * Validates a JATS schema against the Zod definition.
+ * Validates a AGENTABLE schema against the Zod definition.
  * Throws validation errors if the schema is invalid.
  */
-export function validateJats(data: unknown): JatsSchema {
-    return JatsSchemaSchema.parse(data);
+export function validateAgentable(data: unknown): AgentableSchema {
+    return AgentableSchemaSchema.parse(data);
 }
 
 /**
@@ -15,9 +15,9 @@ export function validateJats(data: unknown): JatsSchema {
  * 
  * Future versions will include switch/case logic for v1 -> v2 upgrades.
  */
-export function migrateJats(data: any): JatsSchema {
+export function migrateAgentable(data: any): AgentableSchema {
     if (!data || typeof data !== 'object') {
-        throw new Error("Invalid JATS data: Input must be an object.");
+        throw new Error("Invalid AGENTABLE data: Input must be an object.");
     }
 
     // Example simple migration: add version if missing
@@ -33,7 +33,7 @@ export function migrateJats(data: any): JatsSchema {
 
     // Validate the final result
     try {
-        return validateJats(data);
+        return validateAgentable(data);
     } catch (error) {
         // Enhance error message if possible, or rethrow
         throw new Error(`Migration failed validation: ${error instanceof Error ? error.message : String(error)}`);

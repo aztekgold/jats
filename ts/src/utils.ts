@@ -26,7 +26,7 @@ export function random3Char(): string {
 }
 
 /**
- * JATS Row ID: 9 Chars Time (Base36) + 3 Chars Random
+ * AGENTABLE Row ID: 9 Chars Time (Base36) + 3 Chars Random
  */
 export function generateRowId(): string {
     const timestamp = Date.now();
@@ -34,7 +34,7 @@ export function generateRowId(): string {
 }
 
 /**
- * JATS Schema IDs
+ * AGENTABLE Schema IDs
  */
 export const generateColId = () => `col_${random3Char()}` as const;
 export const generateViewId = () => `view_${random3Char()}` as const;

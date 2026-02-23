@@ -1,19 +1,19 @@
 from typing import Any, Dict
-from .models import JatsSchema
+from .models import AgentableSchema
 
-def validate_jats(data: Dict[str, Any]) -> JatsSchema:
+def validate_agentable(data: Dict[str, Any]) -> AgentableSchema:
     """
-    Validates a dictionary against the JATS Pydantic model.
+    Validates a dictionary against the AGENTABLE Pydantic model.
     Raises pydantic.ValidationError if invalid.
     """
-    return JatsSchema(**data)
+    return AgentableSchema(**data)
 
-def migrate_jats(data: Dict[str, Any]) -> JatsSchema:
+def migrate_agentable(data: Dict[str, Any]) -> AgentableSchema:
     """
-    Migrates a raw dictionary to the latest JATS schema version.
+    Migrates a raw dictionary to the latest AGENTABLE schema version.
     """
     if not isinstance(data, dict):
-        raise ValueError("Invalid JATS data: Input must be a dictionary.")
+        raise ValueError("Invalid AGENTABLE data: Input must be a dictionary.")
 
     # 1. Ensure version exists
     if "version" not in data:
@@ -30,4 +30,4 @@ def migrate_jats(data: Dict[str, Any]) -> JatsSchema:
         data["metadata"] = {"title": "Migrated Table"}
     
     # 3. Validate
-    return validate_jats(data)
+    return validate_agentable(data)

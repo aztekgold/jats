@@ -1,12 +1,12 @@
-import { JatsManager } from "./manager";
-import { JatsAgent } from "./agent";
-import { validateJats, migrateJats } from "./migrate";
-import * as JatsTypes from "./schema";
+import { AgentableManager } from "./manager";
+import { AgentableAgent } from "./agent";
+import { validateAgentable, migrateAgentable } from "./migrate";
+import * as AgentableTypes from "./schema";
 
 export {
-    JatsManager,
-    JatsAgent,
-    validateJats,
-    migrateJats,
-    JatsTypes
+    AgentableManager,
+    AgentableAgent,
+    validateAgentable,
+    migrateAgentable,
+    AgentableTypes
 };

@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jats"
+name = "agentable"
 version = "0.1.0"
-description = "JSON Agentic Table Standard (JATS) Python implementation"
+description = "JSON Agentic Table Standard (AGENTABLE) Python implementation"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [

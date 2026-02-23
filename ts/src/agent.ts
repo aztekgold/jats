@@ -1,19 +1,19 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { JatsManager } from "./manager";
-import { JatsColumn } from "./schema";
+import { AgentableManager } from "./manager";
+import { AgentableColumn } from "./schema";
 
-export interface JatsAgentTool {
+export interface AgentableAgentTool {
     name: string;
     description: string;
     parameters: z.ZodObject<any>;
     execute: (args: any) => Promise<string> | string;
 }
 
-export class JatsAgent {
-    private manager: JatsManager;
+export class AgentableAgent {
+    private manager: AgentableManager;
 
-    constructor(manager: JatsManager) {
+    constructor(manager: AgentableManager) {
         this.manager = manager;
     }
 
@@ -21,7 +21,7 @@ export class JatsAgent {
      * "The Eyes": Returns a markdown description of the table state.
      */
     public describeTable(): string {
-        const schema = this.manager.getJats();
+        const schema = this.manager.getAgentable();
         const meta = schema.metadata;
 
         let output = `# ${meta.title}\n${meta.description || ""}\n\n`;
@@ -55,7 +55,7 @@ export class JatsAgent {
      */
     private getBaseColumnSchemas(): Record<string, z.ZodTypeAny> {
         const schemaShape: Record<string, z.ZodTypeAny> = {};
-        const columns = this.manager.getJats().columns;
+        const columns = this.manager.getAgentable().columns;
 
         columns.forEach((col) => {
             let fieldSchema: z.ZodTypeAny;
@@ -117,7 +117,7 @@ export class JatsAgent {
     /**
      * Tool definition for adding a new row.
      */
-    public getAddRowTool(name: string = "add_row", description: string = "Add a new row to the table. Use column IDs (col_XXX) as keys."): JatsAgentTool {
+    public getAddRowTool(name: string = "add_row", description: string = "Add a new row to the table. Use column IDs (col_XXX) as keys."): AgentableAgentTool {
         const parameters = z.object(this.getBaseColumnSchemas());
         return {
             name,
@@ -125,7 +125,7 @@ export class JatsAgent {
             parameters,
             execute: async (args: any) => {
                 // Check policy
-                const allow = this.manager.getJats().policy?.permissions?.allowAgentCreate ?? true;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentCreate ?? true;
                 if (!allow) return "Permission Denied: Agent is not allowed to create rows.";
 
                 try {
@@ -141,7 +141,7 @@ export class JatsAgent {
     /**
      * Tool definition for updating an existing row.
      */
-    public getUpdateRowTool(name: string = "update_row", description: string = "Update an existing row. Pass row_id along with the column IDs and data to update."): JatsAgentTool {
+    public getUpdateRowTool(name: string = "update_row", description: string = "Update an existing row. Pass row_id along with the column IDs and data to update."): AgentableAgentTool {
         const baseSchemas = this.getBaseColumnSchemas();
         const optionalSchemas: Record<string, z.ZodTypeAny> = {};
         for (const [key, schema] of Object.entries(baseSchemas)) {
@@ -161,7 +161,7 @@ export class JatsAgent {
                 const { row_id, ...updates } = args;
                 
                 // Check policy
-                const allow = this.manager.getJats().policy?.permissions?.allowAgentUpdate ?? true;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
                 if (!allow) return "Permission Denied: Agent is not allowed to update rows.";
 
                 if (!row_id) return "Error: row_id is required.";
@@ -179,7 +179,7 @@ export class JatsAgent {
     /**
      * Tool definition for adding a new option to a select column.
      */
-    public getAddOptionTool(name: string = "add_select_option", description: string = "Add a new option to a select column."): JatsAgentTool {
+    public getAddOptionTool(name: string = "add_select_option", description: string = "Add a new option to a select column."): AgentableAgentTool {
         const parameters = z.object({
             column_id: z.string().describe("The ID of the select column"),
             value: z.string().describe("The new option value to add"),
@@ -194,7 +194,7 @@ export class JatsAgent {
                 const { column_id, value, color } = args;
                 
                 // Check policy (Assume update permission is required to modify column options)
-                const allow = this.manager.getJats().policy?.permissions?.allowAgentUpdate ?? true;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
                 if (!allow) return "Permission Denied: Agent is not allowed to update columns.";
 
                 if (!column_id || !value) return "Error: column_id and value are required.";
@@ -212,7 +212,7 @@ export class JatsAgent {
     /**
      * Vercel AI SDK Wrapper
      */
-    public toVercel(tool: JatsAgentTool) {
+    public toVercel(tool: AgentableAgentTool) {
         return {
             description: tool.description,
             parameters: tool.parameters,
@@ -223,7 +223,7 @@ export class JatsAgent {
     /**
      * OpenAI Function Wrapper (Strict Mode)
      */
-    public toOpenAI(tool: JatsAgentTool) {
+    public toOpenAI(tool: AgentableAgentTool) {
         const jsonSchema = zodToJsonSchema(tool.parameters as any, { target: "openAi" });
 
         return {
@@ -240,7 +240,7 @@ export class JatsAgent {
     /**
      * Anthropic Tool Wrapper
      */
-    public toAnthropic(tool: JatsAgentTool) {
+    public toAnthropic(tool: AgentableAgentTool) {
         const jsonSchema = zodToJsonSchema(tool.parameters as any);
 
         // Remove $schema if present, as Anthropic doesn't strictly need it in input_schema

@@ -1,26 +1,26 @@
 import { z } from "zod";
 import {
-    JatsSchema,
-    JatsSchemaSchema,
-    JatsColumn,
-    JatsRow,
-    JatsView,
-    JatsColumnSchema,
-    JatsRowSchema,
-    JatsViewSchema,
-    JatsFilter,
-    JatsSort,
+    AgentableSchema,
+    AgentableSchemaSchema,
+    AgentableColumn,
+    AgentableRow,
+    AgentableView,
+    AgentableColumnSchema,
+    AgentableRowSchema,
+    AgentableViewSchema,
+    AgentableFilter,
+    AgentableSort,
 } from "./schema";
 import { generateRowId, generateColId, generateViewId } from "./utils";
 
-export class JatsManager {
-    private schema: JatsSchema;
+export class AgentableManager {
+    private schema: AgentableSchema;
 
-    constructor(initialSchema?: Partial<JatsSchema>) {
+    constructor(initialSchema?: Partial<AgentableSchema>) {
         if (initialSchema) {
             // Validate provided schema, filling in defaults if necessary
-            this.schema = JatsSchemaSchema.parse({
-                version: "jats-1.0.0",
+            this.schema = AgentableSchemaSchema.parse({
+                version: "agentable-1.0.0",
                 metadata: {
                     title: "Untitled Table",
                     description: "",
@@ -32,10 +32,10 @@ export class JatsManager {
             });
         } else {
             this.schema = {
-                version: "jats-1.0.0",
+                version: "agentable-1.0.0",
                 metadata: {
                     title: "New Table",
-                    description: "Created by JatsManager",
+                    description: "Created by AgentableManager",
                 },
                 columns: [],
                 views: [],
@@ -47,39 +47,39 @@ export class JatsManager {
     /**
      * Returns the current schema state.
      */
-    public getJats(): JatsSchema {
+    public getAgentable(): AgentableSchema {
         return this.schema;
     }
 
     // --- Column Management ---
 
-    public addColumn(column: Omit<JatsColumn, "id">): JatsColumn {
+    public addColumn(column: Omit<AgentableColumn, "id">): AgentableColumn {
         let newId = generateColId();
         while (this.schema.columns.find((c) => c.id === newId)) {
             newId = generateColId();
         }
 
-        const newCol: JatsColumn = {
+        const newCol: AgentableColumn = {
             id: newId,
             ...column,
         };
         // Validate
-        JatsColumnSchema.parse(newCol);
+        AgentableColumnSchema.parse(newCol);
         this.schema.columns.push(newCol);
         return newCol;
     }
 
-    public getColumn(id: string): JatsColumn | undefined {
+    public getColumn(id: string): AgentableColumn | undefined {
         return this.schema.columns.find((c) => c.id === id);
     }
 
-    public updateColumn(id: string, updates: Partial<Omit<JatsColumn, "id">>): JatsColumn {
+    public updateColumn(id: string, updates: Partial<Omit<AgentableColumn, "id">>): AgentableColumn {
         const colIndex = this.schema.columns.findIndex((c) => c.id === id);
         if (colIndex === -1) {
             throw new Error(`Column with ID ${id} not found.`);
         }
         const updatedCol = { ...this.schema.columns[colIndex], ...updates };
-        JatsColumnSchema.parse(updatedCol);
+        AgentableColumnSchema.parse(updatedCol);
         this.schema.columns[colIndex] = updatedCol;
         return updatedCol;
     }
@@ -99,7 +99,7 @@ export class JatsManager {
         });
     }
 
-    public addOptionToColumn(columnId: string, value: string, color?: string): JatsColumn {
+    public addOptionToColumn(columnId: string, value: string, color?: string): AgentableColumn {
         const colIndex = this.schema.columns.findIndex((c) => c.id === columnId);
         if (colIndex === -1) {
             throw new Error(`Column with ID ${columnId} not found.`);
@@ -130,32 +130,32 @@ export class JatsManager {
             }
         };
 
-        JatsColumnSchema.parse(updatedCol);
+        AgentableColumnSchema.parse(updatedCol);
         this.schema.columns[colIndex] = updatedCol;
         return updatedCol;
     }
 
     // --- Row Management ---
 
-    public addRow(cells: Record<string, any>): JatsRow {
+    public addRow(cells: Record<string, any>): AgentableRow {
         let newId = generateRowId();
         while (this.schema.rows.find((r) => r.id === newId)) {
             newId = generateRowId();
         }
 
-        const newRow: JatsRow = {
+        const newRow: AgentableRow = {
             id: newId,
             cells: cells,
         };
         // Validate against column constraints
         this.validateRow(newRow);
 
-        JatsRowSchema.parse(newRow);
+        AgentableRowSchema.parse(newRow);
         this.schema.rows.push(newRow);
         return newRow;
     }
 
-    public updateRow(id: string, cells: Record<string, any>): JatsRow {
+    public updateRow(id: string, cells: Record<string, any>): AgentableRow {
         const rowIndex = this.schema.rows.findIndex((r) => r.id === id);
         if (rowIndex === -1) {
             throw new Error(`Row with ID ${id} not found.`);
@@ -167,7 +167,7 @@ export class JatsManager {
 
         this.validateRow(updatedRow);
 
-        JatsRowSchema.parse(updatedRow);
+        AgentableRowSchema.parse(updatedRow);
         this.schema.rows[rowIndex] = updatedRow;
         return updatedRow;
     }
@@ -178,13 +178,13 @@ export class JatsManager {
 
     // --- View Management ---
 
-    public createView(name: string): JatsView {
+    public createView(name: string): AgentableView {
         let newId = generateViewId();
         while (this.schema.views.find((v) => v.id === newId)) {
             newId = generateViewId();
         }
 
-        const newView: JatsView = {
+        const newView: AgentableView = {
             id: newId,
             name,
             description: "",
@@ -193,12 +193,12 @@ export class JatsManager {
             hiddenColumns: [],
             columnOrder: this.schema.columns.map(c => c.id)
         };
-        JatsViewSchema.parse(newView);
+        AgentableViewSchema.parse(newView);
         this.schema.views.push(newView);
         return newView;
     }
 
-    private validateRow(row: JatsRow): void {
+    private validateRow(row: AgentableRow): void {
         this.schema.columns.forEach(col => {
             const value = row.cells[col.id];
             if (value === undefined || value === null) return;

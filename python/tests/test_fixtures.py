@@ -1,7 +1,7 @@
 import pytest
 import json
 import os
-from jats.migrate import validate_jats
+from agentable.migrate import validate_agentable
 
 FIXTURES_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../spec/fixtures"))
 
@@ -13,7 +13,7 @@ def test_valid_fixtures():
             with open(filepath, "r") as f:
                 data = json.load(f)
             # Should not raise
-            validate_jats(data)
+            validate_agentable(data)
 
 def test_invalid_fixtures():
     invalid_dir = os.path.join(FIXTURES_DIR, "invalid")
@@ -24,4 +24,4 @@ def test_invalid_fixtures():
                 data = json.load(f)
             # Should raise ValidationError
             with pytest.raises(Exception):
-                validate_jats(data)
+                validate_agentable(data)

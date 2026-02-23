@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateJats } from "../src/migrate";
+import { validateAgentable } from "../src/migrate";
 import fs from "fs";
 import path from "path";
 
@@ -14,7 +14,7 @@ describe("Shared Fixtures", () => {
             it(`should validate ${file}`, () => {
                 const content = fs.readFileSync(path.join(validDir, file), "utf-8");
                 const data = JSON.parse(content);
-                expect(() => validateJats(data)).not.toThrow();
+                expect(() => validateAgentable(data)).not.toThrow();
             });
         });
     });
@@ -27,7 +27,7 @@ describe("Shared Fixtures", () => {
             it(`should reject ${file}`, () => {
                 const content = fs.readFileSync(path.join(invalidDir, file), "utf-8");
                 const data = JSON.parse(content);
-                expect(() => validateJats(data)).toThrow();
+                expect(() => validateAgentable(data)).toThrow();
             });
         });
     });

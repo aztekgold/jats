@@ -1,17 +1,17 @@
 from typing import Any, Dict, List, Type, Optional
 from pydantic import BaseModel, create_model, Field
-from .manager import JatsManager
-from .models import JatsColumn
+from .manager import AgentableManager
+from .models import AgentableColumn
 
-class JatsAgentTooling:
-    def __init__(self, manager: JatsManager):
+class AgentableAgentTooling:
+    def __init__(self, manager: AgentableManager):
         self.manager = manager
 
     def describe_table(self) -> str:
         """
         "The Eyes": Returns a markdown description of the table state.
         """
-        schema = self.manager.get_jats()
+        schema = self.manager.get_agentable()
         meta = schema.metadata
         
         output = f"# {meta.title}\n{meta.description or ''}\n\n"
@@ -40,11 +40,11 @@ class JatsAgentTooling:
         """
         Dynamically builds a Pydantic model for row creation based on current columns.
         """
-        schema = self.manager.get_jats()
+        schema = self.manager.get_agentable()
         fields: Dict[str, Any] = {}
         
         for col in schema.columns:
-            # Map JATS types to Python types
+            # Map AGENTABLE types to Python types
             field_type: Any = str
             if col.type == "number":
                 field_type = float
@@ -132,7 +132,7 @@ class JatsAgentTooling:
     def tool_add_row(self, cells: Dict[str, Any]) -> str:
         try:
             # Here we could validate `cells` against `generate_row_model()` if we wanted strictly enforced types
-            # before passing to manager. For now, JatsManager does its own checking/storage.
+            # before passing to manager. For now, AgentableManager does its own checking/storage.
             row = self.manager.add_row(cells)
             return f"Success: Added row with ID {row.id}"
         except Exception as e:

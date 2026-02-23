@@ -1,20 +1,20 @@
 import { describe, it, expect, vi } from "vitest";
-import { JatsManager } from "../src/manager";
-import { JatsAgent } from "../src/agent";
-import { validateJats } from "../src/migrate";
+import { AgentableManager } from "../src/manager";
+import { AgentableAgent } from "../src/agent";
+import { validateAgentable } from "../src/migrate";
 
-describe("JatsManager", () => {
+describe("AgentableManager", () => {
     it("should initialize with a default schema", () => {
-        const manager = new JatsManager();
-        const schema = manager.getJats();
-        expect(schema.version).toBe("jats-1.0.0");
+        const manager = new AgentableManager();
+        const schema = manager.getAgentable();
+        expect(schema.version).toBe("agentable-1.0.0");
         expect(schema.columns).toHaveLength(0);
         expect(schema.rows).toHaveLength(0);
     });
 
     describe("ID Collision Prevention", () => {
         it("should prevent column ID collisions", () => {
-            const manager = new JatsManager();
+            const manager = new AgentableManager();
 
             // Math.random() is used to generate the 3 char suffix.
             // We'll mock it to return the same value twice, then a different value.
@@ -37,7 +37,7 @@ describe("JatsManager", () => {
         });
 
         it("should prevent row ID collisions", () => {
-            const manager = new JatsManager();
+            const manager = new AgentableManager();
             manager.addColumn({ name: "Col 1", type: "text" });
 
             // Date.now() controls the 9 char prefix. Math.random controls the 3 char suffix.
@@ -61,24 +61,24 @@ describe("JatsManager", () => {
     });
 
     it("should add a column successfully", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Name", type: "text" });
         expect(col.id).toMatch(/^col_[a-z0-9]{3}$/);
-        expect(manager.getJats().columns).toHaveLength(1);
+        expect(manager.getAgentable().columns).toHaveLength(1);
     });
 
     it("should add a row successfully", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Name", type: "text" });
         const row = manager.addRow({ [col.id]: "Alice" });
         expect(row.id).toHaveLength(12); // 9 time + 3 random
         expect(row.id).toMatch(/^[a-z0-9]+$/); // Base36
-        expect(manager.getJats().rows).toHaveLength(1);
+        expect(manager.getAgentable().rows).toHaveLength(1);
         expect(row.cells[col.id]).toBe("Alice");
     });
 
     it("should CRUD columns", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Temp", type: "number" });
         expect(manager.getColumn(col.id)).toBeDefined();
 
@@ -90,7 +90,7 @@ describe("JatsManager", () => {
     });
 
     it("should add options to select columns", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Status", type: "select" });
 
         // Add new option
@@ -110,15 +110,15 @@ describe("JatsManager", () => {
     });
 
     it("should delete rows", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const row = manager.addRow({});
-        expect(manager.getJats().rows).toHaveLength(1);
+        expect(manager.getAgentable().rows).toHaveLength(1);
         manager.deleteRow(row.id);
-        expect(manager.getJats().rows).toHaveLength(0);
+        expect(manager.getAgentable().rows).toHaveLength(0);
     });
 
     it("should validate ISO-8601 UTC dates", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Due Date", type: "date" });
 
         // Valid dates
@@ -132,11 +132,11 @@ describe("JatsManager", () => {
     });
 });
 
-describe("JatsAgent", () => {
+describe("AgentableAgent", () => {
     it("should provide a markdown description", () => {
-        const manager = new JatsManager();
+        const manager = new AgentableManager();
         manager.addColumn({ name: "Status", type: "boolean", constraints: { options: [{ value: "Open" }] } });
-        const agent = new JatsAgent(manager);
+        const agent = new AgentableAgent(manager);
         const desc = agent.describeTable();
         expect(desc).toContain("# New Table");
         expect(desc).toContain("**Status** (boolean)");
@@ -144,11 +144,11 @@ describe("JatsAgent", () => {
     });
 
     it("should allow tool usage", () => {
-        const manager = new JatsManager();
-        const agent = new JatsAgent(manager);
+        const manager = new AgentableManager();
+        const agent = new AgentableAgent(manager);
 
         const result = agent.tool_addColumn("Age", "number");
         expect(result).toContain("Success");
-        expect(manager.getJats().columns).toHaveLength(1);
+        expect(manager.getAgentable().columns).toHaveLength(1);
     });
 });

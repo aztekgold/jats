@@ -1,16 +1,28 @@
 {
-  "name": "ts",
+  "name": "@aztekgold/agentable",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Agentic Table Standard - TypeScript implementation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "agentable",
+    "json",
+    "table",
+    "ai",
+    "agentic"
+  ],
+  "author": "aztekgold",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {

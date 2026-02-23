@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { JatsSchema, JatsSchemaSchema, JatsColumn, JatsRow, JatsColumnType, JatsOption } from '../schema';
+import { AgentableSchema, AgentableSchemaSchema, AgentableColumn, AgentableRow, AgentableColumnType, AgentableOption } from '../schema';
 import { generateRowId, generateColId } from '../utils';
 
 function upgradeTable(inputPath: string, outputPath: string) {
@@ -10,13 +10,13 @@ function upgradeTable(inputPath: string, outputPath: string) {
 
     console.log(`Found ${legacyData.columns?.length || 0} columns and ${legacyData.rows?.length || 0} rows.`);
 
-    const newColumns: JatsColumn[] = [];
+    const newColumns: AgentableColumn[] = [];
     const colTypes: Record<string, string> = {};
     const idMap: Record<string, string> = {};
 
     // Map columns
     for (const legacyCol of legacyData.columns || []) {
-        let newType: JatsColumnType = "text";
+        let newType: AgentableColumnType = "text";
         let multiSelect = false;
 
         if (legacyCol.type === "dropdown") {
@@ -38,12 +38,12 @@ function upgradeTable(inputPath: string, outputPath: string) {
         const normalizedId = generateColId();
         idMap[legacyCol.id] = normalizedId;
 
-        const options: JatsOption[] = (legacyCol.typeOptions?.options || []).map((opt: any) => ({
+        const options: AgentableOption[] = (legacyCol.typeOptions?.options || []).map((opt: any) => ({
             value: opt.value,
             color: opt.style // Map style to color
         }));
 
-        const newCol: JatsColumn = {
+        const newCol: AgentableColumn = {
             id: normalizedId as `col_${string}`,
             name: legacyCol.name,
             type: newType,
@@ -66,7 +66,7 @@ function upgradeTable(inputPath: string, outputPath: string) {
     }
 
     // Map rows
-    const newRows: JatsRow[] = [];
+    const newRows: AgentableRow[] = [];
     for (const legacyRow of legacyData.rows || []) {
         const cells: Record<string, any> = {};
 
@@ -94,8 +94,8 @@ function upgradeTable(inputPath: string, outputPath: string) {
     }
 
     // Construct final schema
-    const jatsData: JatsSchema = {
-        version: "jats-1.0.0",
+    const atsData: AgentableSchema = {
+        version: "agentable-1.0.0",
         metadata: {
             title: "Migrated Table",
             description: "Upgraded from v0.1 format"
@@ -107,9 +107,9 @@ function upgradeTable(inputPath: string, outputPath: string) {
 
     // Validate
     console.log("Validating upgraded schema...");
-    const parsedData = JatsSchemaSchema.parse({
-        $schema: "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
-        ...jatsData
+    const parsedData = AgentableSchemaSchema.parse({
+        $schema: "https://raw.githubusercontent.com/aztekgold/agentable/main/schema.json",
+        ...atsData
     });
 
     // Write output

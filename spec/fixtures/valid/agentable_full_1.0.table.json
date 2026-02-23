@@ -1,9 +1,9 @@
 {
-    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
-    "version": "jats-1.0.0",
+    "$schema": "https://raw.githubusercontent.com/aztekgold/agentable/main/schema.json",
+    "version": "agentable-1.0.0",
     "metadata": {
         "title": "Full Example",
-        "description": "A comprehensive JATS table with all features"
+        "description": "A comprehensive AGENTABLE table with all features"
     },
     "policy": {
         "permissions": {

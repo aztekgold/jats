@@ -1,18 +1,18 @@
 import { z } from "zod";
 
 /**
- * JATS v1.0.0 - JSON Agentic Table Standard
+ * AGENTABLE v1.0.0 - JSON Agentic Table Standard
  * Zod Schemas
  */
 
 // --- Base Types ---
 
 // Base36 string
-export const JatsBase36Schema = z.string().length(12).regex(/^[a-z0-9]+$/);
+export const AgentableBase36Schema = z.string().length(12).regex(/^[a-z0-9]+$/);
 
-export type JatsBase36 = z.infer<typeof JatsBase36Schema>;
+export type AgentableBase36 = z.infer<typeof AgentableBase36Schema>;
 
-export const JatsColumnTypeSchema = z.enum([
+export const AgentableColumnTypeSchema = z.enum([
     "text",
     "number",
     "select",
@@ -21,21 +21,21 @@ export const JatsColumnTypeSchema = z.enum([
     "url",
 ]);
 
-export type JatsColumnType = z.infer<typeof JatsColumnTypeSchema>;
+export type AgentableColumnType = z.infer<typeof AgentableColumnTypeSchema>;
 
-export const JatsOptionSchema = z.object({
+export const AgentableOptionSchema = z.object({
     value: z.string(),
     color: z.string().optional(), // UI hint: "red", "#ff0000", etc.
 });
 
-export type JatsOption = z.infer<typeof JatsOptionSchema>;
+export type AgentableOption = z.infer<typeof AgentableOptionSchema>;
 
 // --- Column Schema ---
 
-export const JatsColumnSchema = z.object({
+export const AgentableColumnSchema = z.object({
     id: z.custom<`col_${string}`>((val) => typeof val === "string" && val.startsWith("col_")),
     name: z.string(),
-    type: JatsColumnTypeSchema,
+    type: AgentableColumnTypeSchema,
     description: z.string().optional(), // Optional: Only provide if the Agent needs extra context
     display: z.object({
         width: z.number().optional(), // Optional: UI column width in pixels
@@ -43,7 +43,7 @@ export const JatsColumnSchema = z.object({
     }).optional(),
     constraints: z.object({
         multiSelect: z.boolean().optional(),
-        options: z.array(JatsOptionSchema).optional(),
+        options: z.array(AgentableOptionSchema).optional(),
         required: z.boolean().optional(),
         min: z.number().optional(),
         max: z.number().optional(),
@@ -51,55 +51,55 @@ export const JatsColumnSchema = z.object({
     }).optional(),
 });
 
-export type JatsColumn = z.infer<typeof JatsColumnSchema>;
+export type AgentableColumn = z.infer<typeof AgentableColumnSchema>;
 
 // --- Filter Schema ---
 
-export const JatsFilterSchema = z.object({
+export const AgentableFilterSchema = z.object({
     id: z.custom<`flt_${string}`>((val) => typeof val === "string" && val.startsWith("flt_")),
     columnId: z.string(),
     operator: z.enum(["is", "isNot", "contains", "gt", "lt", "isEmpty", "isNotEmpty"]),
     value: z.any(),
 });
 
-export type JatsFilter = z.infer<typeof JatsFilterSchema>;
+export type AgentableFilter = z.infer<typeof AgentableFilterSchema>;
 
 // --- Sort Schema ---
 
-export const JatsSortSchema = z.object({
+export const AgentableSortSchema = z.object({
     columnId: z.string(),
     direction: z.enum(["asc", "desc"]),
 });
 
-export type JatsSort = z.infer<typeof JatsSortSchema>;
+export type AgentableSort = z.infer<typeof AgentableSortSchema>;
 
 // --- View Schema ---
 
-export const JatsViewSchema = z.object({
+export const AgentableViewSchema = z.object({
     id: z.custom<`view_${string}`>((val) => typeof val === "string" && val.startsWith("view_")),
     name: z.string(),
     description: z.string().optional(), // Optional
-    filters: z.array(JatsFilterSchema),
-    sorts: z.array(JatsSortSchema),
+    filters: z.array(AgentableFilterSchema),
+    sorts: z.array(AgentableSortSchema),
     hiddenColumns: z.array(z.string()),
     columnOrder: z.array(z.string()),
 });
 
-export type JatsView = z.infer<typeof JatsViewSchema>;
+export type AgentableView = z.infer<typeof AgentableViewSchema>;
 
 // --- Row Schema ---
 
-export const JatsRowSchema = z.object({
-    id: JatsBase36Schema, // 9 Time + 3 Random (Base36 alphanumeric)
+export const AgentableRowSchema = z.object({
+    id: AgentableBase36Schema, // 9 Time + 3 Random (Base36 alphanumeric)
     cells: z.record(z.string(), z.any()), // Keyed by col_id
 });
 
-export type JatsRow = z.infer<typeof JatsRowSchema>;
+export type AgentableRow = z.infer<typeof AgentableRowSchema>;
 
-// --- Main JATS Schema ---
+// --- Main AGENTABLE Schema ---
 
-export const JatsSchemaSchema = z.object({
-    version: z.literal("jats-1.0.0"),
+export const AgentableSchemaSchema = z.object({
+    version: z.literal("agentable-1.0.0"),
     metadata: z.object({
         title: z.string(),
         description: z.string().optional(),
@@ -112,9 +112,9 @@ export const JatsSchemaSchema = z.object({
             allowAgentDelete: z.boolean().optional(),
         }).optional(),
     }).optional(),
-    columns: z.array(JatsColumnSchema),
-    views: z.array(JatsViewSchema),
-    rows: z.array(JatsRowSchema),
+    columns: z.array(AgentableColumnSchema),
+    views: z.array(AgentableViewSchema),
+    rows: z.array(AgentableRowSchema),
 });
 
-export type JatsSchema = z.infer<typeof JatsSchemaSchema>;
+export type AgentableSchema = z.infer<typeof AgentableSchemaSchema>;

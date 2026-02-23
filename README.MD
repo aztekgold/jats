@@ -1,7 +1,7 @@
-# JATS v1.0.0 Specification
-## JSON Agentic Table Standard
+# AGENTABLE v1.0.0 Specification
+## The JSON Agentic-Friendly Table Standard
 
-JATS (JSON Agentic Table Standard) is a platform-agnostic, AI-first format for structured data tables. It embeds meaning, structure, and permissions directly into tables, allowing agents to safely read, write, and exchange data with minimal overhead. JATS is both human- and machine-readable, designed for clarity, longevity and portability.
+AGENTABLE is a platform-agnostic, agent-friendly JSON format for structured data tables. It embeds meaning, structure, and permissions directly into tables, allowing agents to safely read, write, and exchange data with minimal overhead. AGENTABLE is both human- and machine-readable, designed for clarity, longevity, and portability.
 
 ---
 
@@ -22,7 +22,7 @@ JATS (JSON Agentic Table Standard) is a platform-agnostic, AI-first format for s
 
 AI agents can read tables, but they cannot reliably understand them. Formats like CSV, Markdown, and plain JSON store values but not meaning. They lack typing, context, identity, and safe interaction boundaries, forcing agents to guess what data represents and making joins unsafe, automation brittle, and reasoning error-prone.
 
-JATS addresses this problem by providing a standardized, deterministic table schema with semantic anchors (field descriptions), a strict typing system, constraints, and a collision-resistant ID strategy. This enables distributed, multi-agent table writing without coordination, making structured data safer, clearer, and more reliable for both humans and AI.
+AGENTABLE addresses this problem by providing a standardized, deterministic table schema with semantic anchors (field descriptions), a strict typing system, constraints, and a collision-resistant ID strategy. This enables distributed, multi-agent table writing without coordination, making structured data safer, clearer, and more reliable for both humans and AI.
 
 ## 2. Design Philosophy
 
@@ -35,7 +35,7 @@ JATS addresses this problem by providing a standardized, deterministic table sch
 
 ## 3. Unified ID Generation
 
-JATS uses a **Base36** alphabet (`0123456789abcdefghijklmnopqrstuvwxyz`) for all identifiers to balance token friendly compression with naturally sortable, URL-friendly, and case-safe strings
+AGENTABLE uses a **Base36** alphabet (`0123456789abcdefghijklmnopqrstuvwxyz`) for all identifiers to balance token friendly compression with naturally sortable, URL-friendly, and case-safe strings
 
 ### 3.1 Schema IDs (Prefix + 3 Random)
 Short, stable handles for structural elements.
@@ -53,14 +53,14 @@ A 12-character string: `TTTTTTTTTRRR`.
 
 ## 4. Schema Definition
 
-The JATS schema is defined using TypeScript interfaces below, but is language-agnostic in practice.
+The AGENTABLE schema is defined using TypeScript interfaces below, but is language-agnostic in practice.
 
 ### 4.1 Columns
 
 Columns define the structure and constraints of the data.
 
 ```typescript
-type JatsColumnType = 
+type AgentableColumnType = 
   | "text" 
   | "number" 
   | "select" 
@@ -68,15 +68,15 @@ type JatsColumnType =
   | "boolean" 
   | "url";
 
-interface JatsOption {
+interface AgentableOption {
   value: string;
   color?: string; // UI hint: "red", "#ff0000", etc.
 }
 
-interface JatsColumn {
+interface AgentableColumn {
   id: `col_${string}`;
   name: string;
-  type: JatsColumnType;
+  type: AgentableColumnType;
   description?: string; // Context for Agents
   display: {
     width: number;
@@ -84,7 +84,7 @@ interface JatsColumn {
   };
   constraints?: {
     multiSelect?: boolean;
-    options?: JatsOption[];
+    options?: AgentableOption[];
     required?: boolean;
     min?: number;
     max?: number;
@@ -98,24 +98,24 @@ interface JatsColumn {
 Views correspond to saved states of the table, including filtering, sorting, and visibility.
 
 ```typescript
-interface JatsFilter {
+interface AgentableFilter {
   id: `flt_${string}`;
   columnId: string;
   operator: "is" | "isNot" | "contains" | "gt" | "lt" | "isEmpty" | "isNotEmpty";
   value: any;
 }
 
-interface JatsSort {
+interface AgentableSort {
   columnId: string;
   direction: "asc" | "desc";
 }
 
-interface JatsView {
+interface AgentableView {
   id: `view_${string}`;
   name: string;
   description: string;
-  filters: JatsFilter[];
-  sorts: JatsSort[];
+  filters: AgentableFilter[];
+  sorts: AgentableSort[];
   hiddenColumns: string[];   // List of column IDs to hide
   columnOrder: string[];     // List of column IDs in display order
 }
@@ -126,7 +126,7 @@ interface JatsView {
 Rows store the actual data. Cells are keyed by Column ID, not component name, to allow renaming columns without breaking data.
 
 ```typescript
-interface JatsRow {
+interface AgentableRow {
   id: string; // 12 chars: 9 Time + 3 Random
   cells: Record<string, any>; // Keyed by col_id (e.g. "col_a1b": "Value")
 }
@@ -135,7 +135,7 @@ interface JatsRow {
 ### 4.4 Metadata & Policy
 
 ```typescript
-interface JatsSchema {
+interface AgentableSchema {
   version: "1.0.0";
   metadata: {
     title: string;
@@ -149,9 +149,9 @@ interface JatsSchema {
       allowAgentDelete: boolean;
     };
   };
-  columns: JatsColumn[];
-  views: JatsView[];
-  rows: JatsRow[];
+  columns: AgentableColumn[];
+  views: AgentableView[];
+  rows: AgentableRow[];
 }
 ```
 
@@ -190,7 +190,7 @@ function random3Char(): string {
 }
 
 /**
- * JATS Row ID: 9 Chars Time (Base36) + 3 Chars Random
+ * AGENTABLE Row ID: 9 Chars Time (Base36) + 3 Chars Random
  */
 export function generateRowId(): string {
   const timestamp = Date.now();
@@ -198,7 +198,7 @@ export function generateRowId(): string {
 }
 
 /**
- * JATS Schema IDs
+ * AGENTABLE Schema IDs
  */
 export const generateColId = () => `col_${random3Char()}`;
 export const generateViewId = () => `view_${random3Char()}`;
@@ -207,11 +207,11 @@ export const generateFilterId = () => `flt_${random3Char()}`;
 
 ---
 
-## 6. Agent Tooling Integrations (JATS Agent)
+## 6. Agent Tooling Integrations (AGENTABLE Agent)
 
-JATS provides native tooling features that allow backend systems to securely expose table operations directly to LLM agents. Features include:
+AGENTABLE provides native tooling features that allow backend systems to securely expose table operations directly to LLM agents. Features include:
 
-*   **Native Zod Generation:** Dynamically builds precise parameter schemas strictly enforcing the `JatsColumn` settings and configurations of the current table.
+*   **Native Zod Generation:** Dynamically builds precise parameter schemas strictly enforcing the `AgentableColumn` settings and configurations of the current table.
 *   **Unified Provider Wrapping:** Tool definitions are shaped generically and can be cleanly exported natively to Vercel AI SDK, OpenAI, and Anthropic formatting (`toVercel()`, `toOpenAI()`, and `toAnthropic()`).
 *   **Granular Boundary Protection:** Execution logic explicitly checks schema policy capabilities (`allowAgentCreate`, `allowAgentUpdate`, etc.) before fulfilling agent operations to maintain sandbox integrity.
 

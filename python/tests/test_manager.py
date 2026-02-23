@@ -1,57 +1,57 @@
 import pytest
 from unittest.mock import patch
-from jats.manager import JatsManager
-from jats.tools import JatsAgentTooling
+from agentable.manager import AgentableManager
+from agentable.tools import AgentableAgentTooling
 
 def test_manager_initialization():
-    manager = JatsManager()
-    schema = manager.get_jats()
-    assert schema.version == "jats-1.0.0"
+    manager = AgentableManager()
+    schema = manager.get_agentable()
+    assert schema.version == "agentable-1.0.0"
     assert len(schema.columns) == 0
     assert len(schema.rows) == 0
 
 def test_add_column():
-    manager = JatsManager()
+    manager = AgentableManager()
     col = manager.add_column(name="Name", type="text")
     assert col.id.startswith("col_")
-    assert len(manager.get_jats().columns) == 1
+    assert len(manager.get_agentable().columns) == 1
 
 def test_add_row():
-    manager = JatsManager()
+    manager = AgentableManager()
     col = manager.add_column(name="Name", type="text")
     row = manager.add_row({col.id: "Bob"})
     assert len(row.id) == 12
-    assert len(manager.get_jats().rows) == 1
+    assert len(manager.get_agentable().rows) == 1
     assert row.cells[col.id] == "Bob"
 
 def test_prevent_col_id_collision():
-    manager = JatsManager()
+    manager = AgentableManager()
     
     # Mock to return the same ID twice, then a new one
-    with patch('jats.manager.generate_col_id', side_effect=["col_123", "col_123", "col_456"]):
+    with patch('agentable.manager.generate_col_id', side_effect=["col_123", "col_123", "col_456"]):
         manager.add_column(name="Col 1", type="text")
         
         # This insertion would collide with "col_123", so it should loop and draw "col_456"
         col2 = manager.add_column(name="Col 2", type="text")
         
         assert col2.id == "col_456"
-        assert len(manager.get_jats().columns) == 2
+        assert len(manager.get_agentable().columns) == 2
 
 def test_prevent_row_id_collision():
-    manager = JatsManager()
+    manager = AgentableManager()
     
     # Mock to return the same ID twice, then a new one
-    with patch('jats.manager.generate_row_id', side_effect=["000000000abc", "000000000abc", "000000000xyz"]):
+    with patch('agentable.manager.generate_row_id', side_effect=["000000000abc", "000000000abc", "000000000xyz"]):
         manager.add_row({})
         
         # This insertion would collide with "000000000abc", so it should loop and draw "000000000xyz"
         row2 = manager.add_row({})
         
         assert row2.id == "000000000xyz"
-        assert len(manager.get_jats().rows) == 2
+        assert len(manager.get_agentable().rows) == 2
 
 def test_crud_columns():
-    manager = JatsManager()
+    manager = AgentableManager()
     col = manager.add_column(name="Temp", type="number")
     assert manager.get_column(col.id) is not None
     
@@ -59,15 +59,15 @@ def test_crud_columns():
     assert manager.get_column(col.id) is None
 
 def test_delete_row():
-    manager = JatsManager()
+    manager = AgentableManager()
     row = manager.add_row({})
-    assert len(manager.get_jats().rows) == 1
+    assert len(manager.get_agentable().rows) == 1
     manager.delete_row(row.id)
-    assert len(manager.get_jats().rows) == 0
+    assert len(manager.get_agentable().rows) == 0
 
 def test_agent_tooling():
-    manager = JatsManager()
-    tools = JatsAgentTooling(manager)
+    manager = AgentableManager()
+    tools = AgentableAgentTooling(manager)
     
     result = tools.tool_add_column("Age", "number")
     assert "Success" in result

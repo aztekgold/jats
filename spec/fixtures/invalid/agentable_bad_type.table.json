@@ -1,6 +1,6 @@
 {
-    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
-    "version": "jats-1.0.0",
+    "$schema": "https://raw.githubusercontent.com/aztekgold/agentable/main/schema.json",
+    "version": "agentable-1.0.0",
     "metadata": {
         "title": "Invalid Example",
         "description": "Bad column type"

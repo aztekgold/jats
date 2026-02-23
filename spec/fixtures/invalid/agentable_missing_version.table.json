@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/aztekgold/jats/main/schema.json",
+    "$schema": "https://raw.githubusercontent.com/aztekgold/agentable/main/schema.json",
     "metadata": {
         "title": "Invalid Example",
         "description": "Missing version field"

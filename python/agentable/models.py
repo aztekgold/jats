@@ -38,79 +38,79 @@ def generate_filter_id() -> str:
 
 # --- Models ---
 
-class JatsOption(BaseModel):
+class AgentableOption(BaseModel):
     value: str
     color: Optional[str] = None
 
 
-class JatsColumnConstraints(BaseModel):
+class AgentableColumnConstraints(BaseModel):
     multiSelect: Optional[bool] = None
-    options: Optional[List[JatsOption]] = None
+    options: Optional[List[AgentableOption]] = None
     required: Optional[bool] = None
     min: Optional[float] = None
     max: Optional[float] = None
     pattern: Optional[str] = None
 
 
-class JatsColumnDisplay(BaseModel):
+class AgentableColumnDisplay(BaseModel):
     width: Optional[float] = None
 
 
-class JatsColumn(BaseModel):
+class AgentableColumn(BaseModel):
     id: str = Field(pattern=r"^col_[a-z0-9]{3}$")
     name: str
     type: Literal["text", "number", "select", "date", "boolean", "url"]
     description: Optional[str] = None
-    display: Optional[JatsColumnDisplay] = None
-    constraints: Optional[JatsColumnConstraints] = None
+    display: Optional[AgentableColumnDisplay] = None
+    constraints: Optional[AgentableColumnConstraints] = None
 
 
-class JatsFilter(BaseModel):
+class AgentableFilter(BaseModel):
     id: str = Field(pattern=r"^flt_[a-z0-9]{3}$")
     columnId: str
     operator: Literal["is", "isNot", "contains", "gt", "lt", "isEmpty", "isNotEmpty"]
     value: Any
 
 
-class JatsSort(BaseModel):
+class AgentableSort(BaseModel):
     columnId: str
     direction: Literal["asc", "desc"]
 
 
-class JatsView(BaseModel):
+class AgentableView(BaseModel):
     id: str = Field(pattern=r"^view_[a-z0-9]{3}$")
     name: str
     description: Optional[str] = None
-    filters: List[JatsFilter] = []
-    sorts: List[JatsSort] = []
+    filters: List[AgentableFilter] = []
+    sorts: List[AgentableSort] = []
     hiddenColumns: List[str] = []
     columnOrder: List[str] = []
 
 
-class JatsRow(BaseModel):
+class AgentableRow(BaseModel):
     id: str = Field(pattern=r"^[a-z0-9]{12}$")
     cells: Dict[str, Any] = {}
 
 
-class JatsMetadata(BaseModel):
+class AgentableMetadata(BaseModel):
     title: str
     description: Optional[str] = None
 
-class JatsPermissions(BaseModel):
+class AgentablePermissions(BaseModel):
     allowAgentRead: Optional[bool] = None
     allowAgentCreate: Optional[bool] = None
     allowAgentUpdate: Optional[bool] = None
     allowAgentDelete: Optional[bool] = None
 
-class JatsPolicy(BaseModel):
-    permissions: Optional[JatsPermissions] = None
+class AgentablePolicy(BaseModel):
+    permissions: Optional[AgentablePermissions] = None
 
 
-class JatsSchema(BaseModel):
+class AgentableSchema(BaseModel):
     schema_url: Optional[str] = Field(default=None, alias="$schema")
-    version: Literal["jats-1.0.0"]
-    metadata: JatsMetadata
-    policy: Optional[JatsPolicy] = None
-    columns: List[JatsColumn] = []
-    views: List[JatsView] = []
-    rows: List[JatsRow] = []
+    version: Literal["agentable-1.0.0"]
+    metadata: AgentableMetadata
+    policy: Optional[AgentablePolicy] = None
+    columns: List[AgentableColumn] = []
+    views: List[AgentableView] = []
+    rows: List[AgentableRow] = []

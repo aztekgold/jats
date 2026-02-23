@@ -1,0 +1,11 @@
+{
+    "$schema": "https://raw.githubusercontent.com/aztekgold/agentable/main/schema.json",
+    "version": "agentable-1.0.0",
+    "metadata": {
+        "title": "Minimal Example",
+        "description": "A minimal valid AGENTABLE table"
+    },
+    "columns": [],
+    "views": [],
+    "rows": []
+}

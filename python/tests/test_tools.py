@@ -1,13 +1,13 @@
 import pytest
-from jats.manager import JatsManager
-from jats.tools import JatsAgentTooling
+from agentable.manager import AgentableManager
+from agentable.tools import AgentableAgentTooling
 
 def test_dynamic_model_generation():
-    manager = JatsManager()
+    manager = AgentableManager()
     col1 = manager.add_column("Task", "text", constraints={"required": True})
     col2 = manager.add_column("Count", "number")
     
-    tools = JatsAgentTooling(manager)
+    tools = AgentableAgentTooling(manager)
     model = tools.generate_row_model()
     
     schema = model.model_json_schema()
@@ -23,10 +23,10 @@ def test_dynamic_model_generation():
     assert model.model_config["extra"] == "forbid"
 
 def test_format_openai():
-    manager = JatsManager()
+    manager = AgentableManager()
     col = manager.add_column("Url", "url")
     
-    tools = JatsAgentTooling(manager)
+    tools = AgentableAgentTooling(manager)
     tool_def = tools.format_openai("add_link")
     
     assert tool_def["type"] == "function"
@@ -37,10 +37,10 @@ def test_format_openai():
     assert col.id in params["properties"]
 
 def test_format_anthropic():
-    manager = JatsManager()
+    manager = AgentableManager()
     col = manager.add_column("IsDone", "boolean")
     
-    tools = JatsAgentTooling(manager)
+    tools = AgentableAgentTooling(manager)
     tool_def = tools.format_anthropic("update_task")
     
     assert "input_schema" in tool_def
