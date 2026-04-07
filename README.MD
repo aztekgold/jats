@@ -35,7 +35,7 @@ AGENTABLE addresses this problem by providing a standardized, deterministic tabl
 
 ## 3. Unified ID Generation
 
-AGENTABLE uses a **Base36** alphabet (`0123456789abcdefghijklmnopqrstuvwxyz`) for all identifiers to balance token friendly compression with naturally sortable, URL-friendly, and case-safe strings
+AGENTABLE uses **Base36** encoding for all identifiers to balance token-friendly compression with naturally sortable, URL-friendly, and case-safe strings. IDs are always stored and compared in **lowercase**; implementations that produce uppercase Base36 (e.g. some languages' built-in encoders) must normalize to lowercase before use.
 
 ### 3.1 Schema IDs (Prefix + 3 Random)
 Short, stable handles for structural elements.
@@ -101,7 +101,7 @@ Views correspond to saved states of the table, including filtering, sorting, and
 interface AgentableFilter {
   id: `flt_${string}`;
   columnId: string;
-  operator: "is" | "isNot" | "contains" | "gt" | "lt" | "isEmpty" | "isNotEmpty";
+  operator: "is" | "isNot" | "contains" | "startsWith" | "endsWith" | "gt" | "lt" | "isEmpty" | "isNotEmpty";
   value: any;
 }
 
@@ -162,39 +162,18 @@ interface AgentableSchema {
 Standardized logic for generating compliant IDs.
 
 ```typescript
-const BASE36_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
-
-/**
- * Encodes a number into a Base36 string of a specific length.
- */
-function encodeBase36(value: number, length: number): string {
-  let result = "";
-  let n = value;
-  while (n > 0) {
-    result = BASE36_ALPHABET[n % 36] + result;
-    n = Math.floor(n / 36);
-  }
-  return result.padStart(length, "0");
-}
-
 /**
  * Generates the unified 3-character random suffix.
  */
 function random3Char(): string {
-  let result = "";
-  for (let i = 0; i < 3; i++) {
-    const randomIndex = Math.floor(Math.random() * 36);
-    result += BASE36_ALPHABET[randomIndex];
-  }
-  return result;
+  return Math.floor(Math.random() * 46656).toString(36).padStart(3, "0");
 }
 
 /**
  * AGENTABLE Row ID: 9 Chars Time (Base36) + 3 Chars Random
  */
 export function generateRowId(): string {
-  const timestamp = Date.now();
-  return encodeBase36(timestamp, 9) + random3Char();
+  return Date.now().toString(36).padStart(9, "0") + random3Char();
 }
 
 /**
