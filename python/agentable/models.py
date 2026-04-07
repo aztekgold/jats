@@ -4,13 +4,11 @@ import re
 import time
 import random
 
-# --- Constants ---
-
 BASE36_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 # --- Utils ---
 
-def encode_base36(value: int, length: int) -> str:
+def _to_base36(value: int, length: int) -> str:
     result = ""
     n = value
     while n > 0:
@@ -19,11 +17,11 @@ def encode_base36(value: int, length: int) -> str:
     return result.rjust(length, "0")
 
 def random_3_char() -> str:
-    return "".join(random.choice(BASE36_ALPHABET) for _ in range(3))
+    return _to_base36(random.randint(0, 46655), 3)
 
 def generate_row_id() -> str:
     timestamp = int(time.time() * 1000)
-    return encode_base36(timestamp, 9) + random_3_char()
+    return _to_base36(timestamp, 9) + random_3_char()
 
 def generate_col_id() -> str:
     return f"col_{random_3_char()}"
@@ -68,7 +66,7 @@ class AgentableColumn(BaseModel):
 class AgentableFilter(BaseModel):
     id: str = Field(pattern=r"^flt_[a-z0-9]{3}$")
     columnId: str
-    operator: Literal["is", "isNot", "contains", "gt", "lt", "isEmpty", "isNotEmpty"]
+    operator: Literal["is", "isNot", "contains", "startsWith", "endsWith", "gt", "lt", "isEmpty", "isNotEmpty"]
     value: Any
 
 

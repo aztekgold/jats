@@ -58,7 +58,7 @@ export type AgentableColumn = z.infer<typeof AgentableColumnSchema>;
 export const AgentableFilterSchema = z.object({
     id: z.custom<`flt_${string}`>((val) => typeof val === "string" && val.startsWith("flt_")),
     columnId: z.string(),
-    operator: z.enum(["is", "isNot", "contains", "gt", "lt", "isEmpty", "isNotEmpty"]),
+    operator: z.enum(["is", "isNot", "contains", "startsWith", "endsWith", "gt", "lt", "isEmpty", "isNotEmpty"]),
     value: z.any(),
 });
 
