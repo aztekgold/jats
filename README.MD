@@ -198,3 +198,34 @@ The supported dynamic schema tools include:
 1.  **`add_row`**: Dynamically maps necessary column insertions against defined columns.
 2.  **`update_row`**: Enforces a strictly validated `row_id` field alongside safely mapped optional updates for the respective columns.
 3.  **`add_select_option`**: Allows agents to systematically establish new distinct classification constraints directly on categorized `select` columns.
+
+### 6.1 Permission Enforcement
+
+Permissions defined in `policy.permissions` are **hard boundaries**. Agents MUST check the relevant permission flag before executing any operation.
+
+| Operation | Required Permission |
+|---|---|
+| Reading table structure, rows, columns, views, filters, or sorts | `allowAgentRead` |
+| Adding a new row, column, view, filter, or sort | `allowAgentCreate` |
+| Updating a row, column, view, filter, or sort | `allowAgentUpdate` |
+| Deleting a row, column, view, filter, or sort | `allowAgentDelete` |
+
+**Rules:**
+*   An agent MUST check the relevant permission flag **before** executing any operation.
+*   An agent CAN NOT create, update, or delete rows, columns, views, filters, or sorts without the corresponding permission explicitly set to `true`.
+*   An agent MUST NOT silently fail or partially execute a denied operation.
+*   An agent MUST surface the denial to the caller with a structured error message explaining which permission was missing. The user may then grant access and the operation can be reattempted.
+*   A missing permission flag (i.e. `undefined`) MUST be treated as `true` to ensure backwards compatibility with tables that predate explicit policy definitions.
+
+**Denial Response Format:**
+
+When a permission check fails, the tool MUST return a message in the following format:
+
+```
+Permission Denied: Agent is not allowed to [action] rows. Required permission: [permissionKey]
+```
+
+**Example:**
+```
+Permission Denied: Agent is not allowed to create rows. Required permission: allowAgentCreate
+```
