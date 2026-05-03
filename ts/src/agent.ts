@@ -210,6 +210,202 @@ export class AgentableAgent {
     }
 
     /**
+     * Tool definition for adding a new column.
+     */
+    public getAddColumnTool(name: string = "add_column", description: string = "Add a new column to the table structure."): AgentableAgentTool {
+        const parameters = z.object({
+            name: z.string().describe("The name of the column"),
+            type: z.enum(["text", "number", "select", "date", "boolean", "url", "link"]).describe("The type of data this column stores"),
+            description: z.string().optional().describe("Optional semantic description of what this column represents")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentCreate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to create columns.";
+
+                try {
+                    const col = this.manager.addColumn(args);
+                    return `Success: Added column "${col.name}" with ID ${col.id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for updating a column.
+     */
+    public getUpdateColumnTool(name: string = "update_column", description: string = "Update an existing column (rename, change type, or description)."): AgentableAgentTool {
+        const parameters = z.object({
+            column_id: z.string().describe("The ID of the column to update"),
+            name: z.string().optional().describe("New name for the column"),
+            type: z.enum(["text", "number", "select", "date", "boolean", "url", "link"]).optional().describe("New type for the column"),
+            description: z.string().optional().describe("New description for the column")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const { column_id, ...updates } = args;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to update columns.";
+
+                try {
+                    const col = this.manager.updateColumn(column_id, updates);
+                    return `Success: Updated column ${col.id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for deleting a column.
+     */
+    public getDeleteColumnTool(name: string = "delete_column", description: string = "Delete a column and all its data from the table."): AgentableAgentTool {
+        const parameters = z.object({
+            column_id: z.string().describe("The ID of the column to delete")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentDelete ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to delete columns.";
+
+                try {
+                    this.manager.deleteColumn(args.column_id);
+                    return `Success: Deleted column ${args.column_id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for managing views.
+     */
+    public getCreateViewTool(name: string = "create_view", description: string = "Create a new saved view of the table."): AgentableAgentTool {
+        const parameters = z.object({
+            name: z.string().describe("The name of the view")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentCreate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to create views.";
+
+                try {
+                    const view = this.manager.createView(args.name);
+                    return `Success: Created view "${view.name}" with ID ${view.id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for adding a filter to a view.
+     */
+    public getAddFilterTool(name: string = "add_view_filter", description: string = "Add a filter to a specific view."): AgentableAgentTool {
+        const parameters = z.object({
+            view_id: z.string().describe("The ID of the view"),
+            column_id: z.string().describe("The ID of the column to filter by"),
+            operator: z.enum(["is", "isNot", "contains", "startsWith", "endsWith", "gt", "lt", "isEmpty", "isNotEmpty"]).describe("The filter operator"),
+            value: z.any().describe("The value to compare against")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const { view_id, column_id, operator, value } = args;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to update views.";
+
+                try {
+                    const filter = this.manager.addFilter(view_id, { columnId: column_id, operator, value });
+                    return `Success: Added filter to view ${view_id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for adding a sort to a view.
+     */
+    public getAddSortTool(name: string = "add_view_sort", description: string = "Add a sorting rule to a specific view."): AgentableAgentTool {
+        const parameters = z.object({
+            view_id: z.string().describe("The ID of the view"),
+            column_id: z.string().describe("The ID of the column to sort by"),
+            direction: z.enum(["asc", "desc"]).describe("Sort direction")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const { view_id, column_id, direction } = args;
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to update views.";
+
+                try {
+                    const sort = this.manager.addSort(view_id, { columnId: column_id, direction });
+                    return `Success: Added sort to view ${view_id}`;
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
+     * Tool definition for updating table metadata.
+     */
+    public getUpdateMetadataTool(name: string = "update_table_metadata", description: string = "Update the table title or description."): AgentableAgentTool {
+        const parameters = z.object({
+            title: z.string().optional().describe("The new title for the table"),
+            description: z.string().optional().describe("The new description for the table")
+        });
+
+        return {
+            name,
+            description,
+            parameters,
+            execute: async (args: any) => {
+                const allow = this.manager.getAgentable().policy?.permissions?.allowAgentUpdate ?? true;
+                if (!allow) return "Permission Denied: Agent is not allowed to update table metadata.";
+
+                try {
+                    this.manager.updateMetadata(args);
+                    return "Success: Updated table metadata";
+                } catch (error: any) {
+                    return `Error: ${error.message}`;
+                }
+            }
+        };
+    }
+
+    /**
      * Vercel AI SDK Wrapper
      */
     public toVercel(tool: AgentableAgentTool) {

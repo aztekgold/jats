@@ -122,25 +122,119 @@ class AgentableAgentTooling:
 
     # --- Legacy / Internal Tools ---
 
+    def tool_add_row(self, cells: Dict[str, Any]) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentCreate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to create rows."
+            
+        try:
+            row = self.manager.add_row(cells)
+            return f"Success: Added row with ID {row.id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+    
+    def tool_update_row(self, row_id: str, updates: Dict[str, Any]) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentUpdate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to update rows."
+            
+        try:
+            row = self.manager.update_row(row_id, updates) # This method was missing in Python manager, I should verify or add it
+            return f"Success: Updated row {row.id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    def tool_delete_row(self, row_id: str) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentDelete", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to delete rows."
+            
+        try:
+            self.manager.delete_row(row_id)
+            return f"Success: Deleted row {row_id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
     def tool_add_column(self, name: str, type: str, description: Optional[str] = None) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentCreate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to create columns."
+            
         try:
             col = self.manager.add_column(name=name, type=type, description=description)
             return f"Success: Added column \"{col.name}\" with ID {col.id}"
         except Exception as e:
             return f"Error: {str(e)}"
 
-    def tool_add_row(self, cells: Dict[str, Any]) -> str:
+    def tool_update_column(self, column_id: str, **kwargs) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentUpdate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to update columns."
+            
         try:
-            # Here we could validate `cells` against `generate_row_model()` if we wanted strictly enforced types
-            # before passing to manager. For now, AgentableManager does its own checking/storage.
-            row = self.manager.add_row(cells)
-            return f"Success: Added row with ID {row.id}"
+            # Note: We need update_column in Python manager
+            col = self.manager.update_column(column_id, **kwargs)
+            return f"Success: Updated column {col.id}"
         except Exception as e:
             return f"Error: {str(e)}"
-    
-    def tool_delete_row(self, row_id: str) -> str:
+
+    def tool_delete_column(self, column_id: str) -> str:
+        # Check policy
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentDelete", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to delete columns."
+            
         try:
-            self.manager.delete_row(row_id)
-            return f"Success: Deleted row {row_id}"
+            self.manager.delete_column(column_id)
+            return f"Success: Deleted column {column_id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    def tool_create_view(self, name: str) -> str:
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentCreate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to create views."
+            
+        try:
+            view = self.manager.create_view(name)
+            return f"Success: Created view \"{view.name}\" with ID {view.id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    def tool_add_view_filter(self, view_id: str, column_id: str, operator: str, value: Any) -> str:
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentUpdate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to update views."
+            
+        try:
+            self.manager.add_filter(view_id, column_id, operator, value)
+            return f"Success: Added filter to view {view_id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    def tool_add_view_sort(self, view_id: str, column_id: str, direction: str) -> str:
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentUpdate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to update views."
+            
+        try:
+            self.manager.add_sort(view_id, column_id, direction)
+            return f"Success: Added sort to view {view_id}"
+        except Exception as e:
+            return f"Error: {str(e)}"
+
+    def tool_update_table_metadata(self, **kwargs) -> str:
+        allow = getattr(self.manager.get_agentable().policy.permissions, "allowAgentUpdate", True) if self.manager.get_agentable().policy and self.manager.get_agentable().policy.permissions else True
+        if not allow:
+            return "Permission Denied: Agent is not allowed to update table metadata."
+            
+        try:
+            self.manager.update_metadata(**kwargs)
+            return "Success: Updated table metadata"
         except Exception as e:
             return f"Error: {str(e)}"

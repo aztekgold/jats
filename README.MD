@@ -42,6 +42,7 @@ Short, stable handles for structural elements.
 *   **Columns:** `col_` + 3 random chars (e.g., `col_x9z`)
 *   **Views:** `view_` + 3 random chars (e.g., `view_b2y`)
 *   **Filters:** `flt_` + 3 random chars (e.g., `flt_k5p`)
+*   **Sorts:** `srt_` + 3 random chars (e.g., `srt_w1r`)
 
 ### 3.2 Row IDs (9 Time + 3 Random)
 A 12-character string: `TTTTTTTTTRRR`.
@@ -66,7 +67,8 @@ type AgentableColumnType =
   | "select" 
   | "date" 
   | "boolean" 
-  | "url";
+  | "url"
+  | "link";
 
 interface AgentableOption {
   value: string;
@@ -106,6 +108,7 @@ interface AgentableFilter {
 }
 
 interface AgentableSort {
+  id: `srt_${string}`;
   columnId: string;
   direction: "asc" | "desc";
 }
@@ -182,11 +185,60 @@ export function generateRowId(): string {
 export const generateColId = () => `col_${random3Char()}`;
 export const generateViewId = () => `view_${random3Char()}`;
 export const generateFilterId = () => `flt_${random3Char()}`;
+export const generateSortId = () => `srt_${random3Char()}`;
 ```
 
 ---
 
-## 6. Agent Tooling Integrations (AGENTABLE Agent)
+## 6. Developer Libraries
+
+AGENTABLE provides official implementations in **TypeScript** and **Python** to simplify table management, validation, and migration.
+
+### 6.1 Manager Class
+The `Manager` (TS) or `AgentableManager` (Py) is the primary entry point for manipulating tables.
+
+**Key Features:**
+*   **Automatic ID Generation:** Handles collision-protected IDs for columns, rows, views, filters, and sorts.
+*   **Strict Validation:** Uses Zod (TS) or Pydantic (Py) to ensure every change remains schema-compliant.
+*   **Minimalist API:** Focuses on surgical updates (e.g., `updateColumn`, `updateView`).
+
+**Common Methods:**
+*   `addColumn({ name, type, ... })`: Adds a new column.
+*   `updateColumn(id, { ...updates })`: Rename columns or change types.
+*   `addRow({ col_id: value })`: Adds a data row.
+*   `moveRow(id, toIndex)`: Surgical row reordering.
+*   `createView(name)`: Creates a new saved view.
+*   `updateView(id, { name, columnOrder, ... })`: Update view metadata or visibility.
+*   `setColumnVisibility(viewId, colId, visible)`: Easily toggle column hide/show.
+*   `addFilter(viewId, { columnId, operator, value })`: Add a view filter.
+*   `addSort(viewId, { columnId, direction })`: Add a view sort.
+*   `updateMetadata({ title, description })`: Rename the table or update its context.
+
+### 6.2 Usage (TypeScript)
+```typescript
+import { createTable } from "@aztekgold/agentable";
+
+const table = createTable({ metadata: { title: "Task List" } });
+const col = table.addColumn({ name: "Task", type: "text" });
+table.addRow({ [col.id]: "Buy milk" });
+
+const json = table.getAgentable(); // Get the clean JSON
+```
+
+### 6.3 Usage (Python)
+```python
+from agentable import create_table
+
+table = create_table({"metadata": {"title": "Task List"}})
+col = table.add_column(name="Task", type="text")
+table.add_row({col.id: "Buy milk"})
+
+data = table.to_dict() # Get the clean Dict
+```
+
+---
+
+## 7. Agent Tooling Integrations (AGENTABLE Agent)
 
 AGENTABLE provides native tooling features that allow backend systems to securely expose table operations directly to LLM agents. Features include:
 

@@ -18,3 +18,4 @@ export function generateRowId(): string {
 export const generateColId = () => `col_${random3Char()}` as const;
 export const generateViewId = () => `view_${random3Char()}` as const;
 export const generateFilterId = () => `flt_${random3Char()}` as const;
+export const generateSortId = () => `srt_${random3Char()}` as const;

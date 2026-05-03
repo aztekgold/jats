@@ -32,6 +32,9 @@ def generate_view_id() -> str:
 def generate_filter_id() -> str:
     return f"flt_{random_3_char()}"
 
+def generate_sort_id() -> str:
+    return f"srt_{random_3_char()}"
+
 
 
 # --- Models ---
@@ -57,7 +60,7 @@ class AgentableColumnDisplay(BaseModel):
 class AgentableColumn(BaseModel):
     id: str = Field(pattern=r"^col_[a-z0-9]{3}$")
     name: str
-    type: Literal["text", "number", "select", "date", "boolean", "url"]
+    type: Literal["text", "number", "select", "date", "boolean", "url", "link"]
     description: Optional[str] = None
     display: Optional[AgentableColumnDisplay] = None
     constraints: Optional[AgentableColumnConstraints] = None
@@ -71,6 +74,7 @@ class AgentableFilter(BaseModel):
 
 
 class AgentableSort(BaseModel):
+    id: str = Field(pattern=r"^srt_[a-z0-9]{3}$")
     columnId: str
     direction: Literal["asc", "desc"]
 

@@ -19,6 +19,7 @@ export const AgentableColumnTypeSchema = z.enum([
     "date",
     "boolean",
     "url",
+    "link",
 ]);
 
 export type AgentableColumnType = z.infer<typeof AgentableColumnTypeSchema>;
@@ -67,6 +68,7 @@ export type AgentableFilter = z.infer<typeof AgentableFilterSchema>;
 // --- Sort Schema ---
 
 export const AgentableSortSchema = z.object({
+    id: z.custom<`srt_${string}`>((val) => typeof val === "string" && val.startsWith("srt_")),
     columnId: z.string(),
     direction: z.enum(["asc", "desc"]),
 });

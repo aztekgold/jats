@@ -10,3 +10,5 @@ export {
     migrateAgentable as Migrate,
     AgentableTypes as Types
 };
+
+export const createTable = (initialSchema?: Partial<AgentableTypes.AgentableSchema>) => new AgentableManager(initialSchema);

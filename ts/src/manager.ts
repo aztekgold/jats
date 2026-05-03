@@ -10,8 +10,10 @@ import {
     AgentableViewSchema,
     AgentableFilter,
     AgentableSort,
+    AgentableFilterSchema,
+    AgentableSortSchema,
 } from "./schema";
-import { generateRowId, generateColId, generateViewId } from "./utils";
+import { generateRowId, generateColId, generateViewId, generateFilterId, generateSortId } from "./utils";
 
 export class AgentableManager {
     private schema: AgentableSchema;
@@ -49,6 +51,14 @@ export class AgentableManager {
      */
     public getAgentable(): AgentableSchema {
         return this.schema;
+    }
+
+    // --- Metadata Management ---
+
+    public updateMetadata(updates: Partial<AgentableSchema["metadata"]>): void {
+        this.schema.metadata = { ...this.schema.metadata, ...updates };
+        // We don't need full schema validation here as metadata is simple, 
+        // but we could call AgentableSchemaSchema.parse(this.schema) if we wanted to be strict.
     }
 
     // --- Column Management ---
@@ -176,6 +186,27 @@ export class AgentableManager {
         this.schema.rows = this.schema.rows.filter((r) => r.id !== id);
     }
 
+    public moveRow(id: string, toIndex: number): void {
+        const fromIndex = this.schema.rows.findIndex(r => r.id === id);
+        if (fromIndex === -1) throw new Error(`Row ${id} not found`);
+
+        const [row] = this.schema.rows.splice(fromIndex, 1);
+        this.schema.rows.splice(toIndex, 0, row);
+    }
+
+    public setColumnVisibility(viewId: string, columnId: string, visible: boolean): void {
+        const view = this.getView(viewId);
+        if (!view) throw new Error(`View ${viewId} not found`);
+
+        if (visible) {
+            view.hiddenColumns = view.hiddenColumns.filter(id => id !== columnId);
+        } else {
+            if (!view.hiddenColumns.includes(columnId)) {
+                view.hiddenColumns.push(columnId);
+            }
+        }
+    }
+
     // --- View Management ---
 
     public createView(name: string): AgentableView {
@@ -196,6 +227,67 @@ export class AgentableManager {
         AgentableViewSchema.parse(newView);
         this.schema.views.push(newView);
         return newView;
+    }
+
+    public getView(id: string): AgentableView | undefined {
+        return this.schema.views.find(v => v.id === id);
+    }
+
+    public updateView(id: string, updates: Partial<Omit<AgentableView, "id" | "filters" | "sorts">>): AgentableView {
+        const viewIndex = this.schema.views.findIndex(v => v.id === id);
+        if (viewIndex === -1) {
+            throw new Error(`View with ID ${id} not found.`);
+        }
+        
+        // Note: We omit filters and sorts from direct view updates to encourage 
+        // using the dedicated add/remove helper methods for those lists.
+        const updatedView = { ...this.schema.views[viewIndex], ...updates };
+        AgentableViewSchema.parse(updatedView);
+        this.schema.views[viewIndex] = updatedView;
+        return updatedView;
+    }
+
+    public addFilter(viewId: string, filter: Omit<AgentableFilter, "id">): AgentableFilter {
+        const view = this.getView(viewId);
+        if (!view) throw new Error(`View ${viewId} not found`);
+
+        let newId = generateFilterId();
+        // Check for collision across all filters in this view
+        while (view.filters.find(f => f.id === newId)) {
+            newId = generateFilterId();
+        }
+
+        const newFilter: AgentableFilter = { id: newId, ...filter };
+        AgentableFilterSchema.parse(newFilter);
+        view.filters.push(newFilter);
+        return newFilter;
+    }
+
+    public removeFilter(viewId: string, filterId: string): void {
+        const view = this.getView(viewId);
+        if (!view) throw new Error(`View ${viewId} not found`);
+        view.filters = view.filters.filter(f => f.id !== filterId);
+    }
+
+    public addSort(viewId: string, sort: Omit<AgentableSort, "id">): AgentableSort {
+        const view = this.getView(viewId);
+        if (!view) throw new Error(`View ${viewId} not found`);
+
+        let newId = generateSortId();
+        while (view.sorts.find(s => s.id === newId)) {
+            newId = generateSortId();
+        }
+
+        const newSort: AgentableSort = { id: newId, ...sort };
+        AgentableSortSchema.parse(newSort);
+        view.sorts.push(newSort);
+        return newSort;
+    }
+
+    public removeSort(viewId: string, sortId: string): void {
+        const view = this.getView(viewId);
+        if (!view) throw new Error(`View ${viewId} not found`);
+        view.sorts = view.sorts.filter(s => s.id !== sortId);
     }
 
     private validateRow(row: AgentableRow): void {

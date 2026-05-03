@@ -4,8 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentable"
-version = "0.1.0"
+version = "1.0.0"
 description = "JSON Agentic Table Standard (AGENTABLE) Python implementation"
+authors = [
+  { name="Matt / aztekgold" },
+]
+license = { text="MIT" }
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [

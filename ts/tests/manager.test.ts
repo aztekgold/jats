@@ -117,6 +117,54 @@ describe("AgentableManager", () => {
         expect(manager.getAgentable().rows).toHaveLength(0);
     });
 
+    it("should move rows", () => {
+        const manager = new AgentableManager();
+        const r1 = manager.addRow({ name: "Row 1" });
+        const r2 = manager.addRow({ name: "Row 2" });
+        const r3 = manager.addRow({ name: "Row 3" });
+
+        // Initial: [r1, r2, r3]
+        manager.moveRow(r1.id, 1);
+        // Result: [r2, r1, r3]
+        const rows = manager.getAgentable().rows;
+        expect(rows[0].id).toBe(r2.id);
+        expect(rows[1].id).toBe(r1.id);
+        expect(rows[2].id).toBe(r3.id);
+    });
+
+    it("should handle column visibility", () => {
+        const manager = new AgentableManager();
+        const col = manager.addColumn({ name: "Secret", type: "text" });
+        const view = manager.createView("Public View");
+
+        expect(view.hiddenColumns).not.toContain(col.id);
+        
+        manager.setColumnVisibility(view.id, col.id, false);
+        expect(view.hiddenColumns).toContain(col.id);
+
+        manager.setColumnVisibility(view.id, col.id, true);
+        expect(view.hiddenColumns).not.toContain(col.id);
+    });
+
+    it("should create views and handle sorts", () => {
+        const manager = new AgentableManager();
+        const col = manager.addColumn({ name: "Name", type: "text" });
+        const view = manager.createView("My View");
+        
+        expect(view.id).toMatch(/^view_[a-z0-9]{3}$/);
+        expect(view.name).toBe("My View");
+        expect(view.sorts).toHaveLength(0);
+
+        // Manually add a sort (since manager doesn't have a helper yet)
+        view.sorts.push({
+            id: "srt_123",
+            columnId: col.id,
+            direction: "asc"
+        });
+
+        expect(() => validateAgentable(manager.getAgentable())).not.toThrow();
+    });
+
     it("should validate ISO-8601 UTC dates", () => {
         const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Due Date", type: "date" });
