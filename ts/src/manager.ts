@@ -15,10 +15,31 @@ import {
 } from "./schema";
 import { generateRowId, generateColId, generateViewId, generateFilterId, generateSortId } from "./utils";
 
+export type AgentableChangeType = 
+    | "metadata.update"
+    | "column.add" | "column.update" | "column.delete"
+    | "row.add" | "row.update" | "row.delete" | "row.move"
+    | "cell.update"
+    | "view.add" | "view.update" | "view.delete"
+    | "view.filter.add" | "view.filter.remove"
+    | "view.sort.add" | "view.sort.remove";
+
+export interface AgentableChange {
+    type: AgentableChangeType;
+    id: string; // The ID of the affected Row, Column, or View
+    columnId?: string; // Specific to cell.update or column-related changes
+}
+
+export interface AgentableManagerOptions {
+    onChange?: (schema: AgentableSchema, change: AgentableChange) => void;
+}
+
 export class AgentableManager {
     private schema: AgentableSchema;
+    private options: AgentableManagerOptions;
 
-    constructor(initialSchema?: Partial<AgentableSchema>) {
+    constructor(initialSchema?: Partial<AgentableSchema>, options: AgentableManagerOptions = {}) {
+        this.options = options;
         if (initialSchema) {
             // Validate provided schema, filling in defaults if necessary
             this.schema = AgentableSchemaSchema.parse({
@@ -46,6 +67,12 @@ export class AgentableManager {
         }
     }
 
+    private notify(change: AgentableChange): void {
+        if (this.options.onChange) {
+            this.options.onChange(this.schema, change);
+        }
+    }
+
     /**
      * Returns the current schema state.
      */
@@ -57,8 +84,7 @@ export class AgentableManager {
 
     public updateMetadata(updates: Partial<AgentableSchema["metadata"]>): void {
         this.schema.metadata = { ...this.schema.metadata, ...updates };
-        // We don't need full schema validation here as metadata is simple, 
-        // but we could call AgentableSchemaSchema.parse(this.schema) if we wanted to be strict.
+        this.notify({ type: "metadata.update", id: "metadata" });
     }
 
     // --- Column Management ---
@@ -76,6 +102,7 @@ export class AgentableManager {
         // Validate
         AgentableColumnSchema.parse(newCol);
         this.schema.columns.push(newCol);
+        this.notify({ type: "column.add", id: newId });
         return newCol;
     }
 
@@ -91,6 +118,7 @@ export class AgentableManager {
         const updatedCol = { ...this.schema.columns[colIndex], ...updates };
         AgentableColumnSchema.parse(updatedCol);
         this.schema.columns[colIndex] = updatedCol;
+        this.notify({ type: "column.update", id });
         return updatedCol;
     }
 
@@ -107,6 +135,7 @@ export class AgentableManager {
             view.hiddenColumns = view.hiddenColumns.filter(cid => cid !== id);
             view.columnOrder = view.columnOrder.filter(cid => cid !== id);
         });
+        this.notify({ type: "column.delete", id });
     }
 
     public addOptionToColumn(columnId: string, value: string, color?: string): AgentableColumn {
@@ -142,6 +171,7 @@ export class AgentableManager {
 
         AgentableColumnSchema.parse(updatedCol);
         this.schema.columns[colIndex] = updatedCol;
+        this.notify({ type: "column.update", id: columnId });
         return updatedCol;
     }
 
@@ -162,10 +192,32 @@ export class AgentableManager {
 
         AgentableRowSchema.parse(newRow);
         this.schema.rows.push(newRow);
+        this.notify({ type: "row.add", id: newId });
         return newRow;
     }
 
-    public updateRow(id: string, cells: Record<string, any>): AgentableRow {
+    public duplicateRow(id: string): AgentableRow {
+        const sourceIndex = this.schema.rows.findIndex(r => r.id === id);
+        if (sourceIndex === -1) throw new Error(`Row ${id} not found`);
+
+        const sourceRow = this.schema.rows[sourceIndex];
+        let newId = generateRowId();
+        while (this.schema.rows.find((r) => r.id === newId)) {
+            newId = generateRowId();
+        }
+
+        const newRow: AgentableRow = {
+            id: newId,
+            cells: { ...sourceRow.cells },
+        };
+
+        // Insert after source row
+        this.schema.rows.splice(sourceIndex + 1, 0, newRow);
+        this.notify({ type: "row.add", id: newId });
+        return newRow;
+    }
+
+    public updateRow(id: string, cells: Record<string, any>, options: { validate?: boolean } = { validate: true }): AgentableRow {
         const rowIndex = this.schema.rows.findIndex((r) => r.id === id);
         if (rowIndex === -1) {
             throw new Error(`Row with ID ${id} not found.`);
@@ -175,15 +227,33 @@ export class AgentableManager {
             cells: { ...this.schema.rows[rowIndex].cells, ...cells }
         };
 
-        this.validateRow(updatedRow);
+        if (options.validate) {
+            this.validateRow(updatedRow);
+            AgentableRowSchema.parse(updatedRow);
+        }
 
-        AgentableRowSchema.parse(updatedRow);
         this.schema.rows[rowIndex] = updatedRow;
+        this.notify({ type: "row.update", id });
         return updatedRow;
+    }
+
+    public setCell(rowId: string, colId: string, value: any, options: { validate?: boolean } = { validate: true }): void {
+        const row = this.schema.rows.find(r => r.id === rowId);
+        if (!row) throw new Error(`Row ${rowId} not found`);
+
+        if (options.validate) {
+            const col = this.getColumn(colId);
+            if (!col) throw new Error(`Column ${colId} not found`);
+            this.validateCell(col, value);
+        }
+
+        row.cells[colId] = value;
+        this.notify({ type: "cell.update", id: rowId, columnId: colId });
     }
 
     public deleteRow(id: string): void {
         this.schema.rows = this.schema.rows.filter((r) => r.id !== id);
+        this.notify({ type: "row.delete", id });
     }
 
     public moveRow(id: string, toIndex: number): void {
@@ -192,6 +262,7 @@ export class AgentableManager {
 
         const [row] = this.schema.rows.splice(fromIndex, 1);
         this.schema.rows.splice(toIndex, 0, row);
+        this.notify({ type: "row.move", id });
     }
 
     public setColumnVisibility(viewId: string, columnId: string, visible: boolean): void {
@@ -205,6 +276,7 @@ export class AgentableManager {
                 view.hiddenColumns.push(columnId);
             }
         }
+        this.notify({ type: "view.update", id: viewId });
     }
 
     // --- View Management ---
@@ -226,6 +298,7 @@ export class AgentableManager {
         };
         AgentableViewSchema.parse(newView);
         this.schema.views.push(newView);
+        this.notify({ type: "view.add", id: newId });
         return newView;
     }
 
@@ -239,11 +312,10 @@ export class AgentableManager {
             throw new Error(`View with ID ${id} not found.`);
         }
         
-        // Note: We omit filters and sorts from direct view updates to encourage 
-        // using the dedicated add/remove helper methods for those lists.
         const updatedView = { ...this.schema.views[viewIndex], ...updates };
         AgentableViewSchema.parse(updatedView);
         this.schema.views[viewIndex] = updatedView;
+        this.notify({ type: "view.update", id });
         return updatedView;
     }
 
@@ -252,7 +324,6 @@ export class AgentableManager {
         if (!view) throw new Error(`View ${viewId} not found`);
 
         let newId = generateFilterId();
-        // Check for collision across all filters in this view
         while (view.filters.find(f => f.id === newId)) {
             newId = generateFilterId();
         }
@@ -260,6 +331,7 @@ export class AgentableManager {
         const newFilter: AgentableFilter = { id: newId, ...filter };
         AgentableFilterSchema.parse(newFilter);
         view.filters.push(newFilter);
+        this.notify({ type: "view.filter.add", id: viewId });
         return newFilter;
     }
 
@@ -267,6 +339,7 @@ export class AgentableManager {
         const view = this.getView(viewId);
         if (!view) throw new Error(`View ${viewId} not found`);
         view.filters = view.filters.filter(f => f.id !== filterId);
+        this.notify({ type: "view.filter.remove", id: viewId });
     }
 
     public addSort(viewId: string, sort: Omit<AgentableSort, "id">): AgentableSort {
@@ -281,6 +354,7 @@ export class AgentableManager {
         const newSort: AgentableSort = { id: newId, ...sort };
         AgentableSortSchema.parse(newSort);
         view.sorts.push(newSort);
+        this.notify({ type: "view.sort.add", id: viewId });
         return newSort;
     }
 
@@ -288,24 +362,53 @@ export class AgentableManager {
         const view = this.getView(viewId);
         if (!view) throw new Error(`View ${viewId} not found`);
         view.sorts = view.sorts.filter(s => s.id !== sortId);
+        this.notify({ type: "view.sort.remove", id: viewId });
+    }
+
+    private validateCell(col: AgentableColumn, value: any): void {
+        if (value === undefined || value === null) {
+            if (col.constraints?.required) {
+                throw new Error(`Column "${col.name}" is required.`);
+            }
+            return;
+        }
+
+        switch (col.type) {
+            case "number":
+                if (typeof value !== "number") throw new Error(`Column "${col.name}" requires a number.`);
+                break;
+            case "boolean":
+                if (typeof value !== "boolean") throw new Error(`Column "${col.name}" requires a boolean.`);
+                break;
+            case "date":
+                const isoSchema = z.string().datetime();
+                if (!isoSchema.safeParse(value).success) {
+                    throw new Error(`Column "${col.name}" (date) requires a valid ISO-8601 UTC string.`);
+                }
+                break;
+            case "select":
+                if (col.constraints?.options) {
+                    const options = col.constraints.options.map(o => o.value);
+                    if (col.constraints.multiSelect) {
+                        if (!Array.isArray(value)) throw new Error(`Column "${col.name}" (multi-select) requires an array.`);
+                        value.forEach(v => {
+                            if (!options.includes(v)) throw new Error(`Value "${v}" not found in options for column "${col.name}".`);
+                        });
+                    } else {
+                        if (!options.includes(value)) throw new Error(`Value "${value}" not found in options for column "${col.name}".`);
+                    }
+                }
+                break;
+            case "url":
+                if (!z.string().url().safeParse(value).success) throw new Error(`Column "${col.name}" requires a valid URL.`);
+                break;
+        }
     }
 
     private validateRow(row: AgentableRow): void {
         this.schema.columns.forEach(col => {
             const value = row.cells[col.id];
-            if (value === undefined || value === null) return;
-
-            if (col.type === "date") {
-                // Strict ISO-8601 UTC check (simple/fast check)
-                // Must look like YYYY-MM-DDTHH:mm:ss.sssZ or similar
-                // We'll use Zod's datetime() to be safe and consistent with strict validation
-                const isoSchema = z.string().datetime();
-                const result = isoSchema.safeParse(value);
-
-                if (!result.success) {
-                    throw new Error(`Column "${col.name}" (date) requires a valid ISO-8601 UTC string (e.g. 2023-01-01T12:00:00Z). Received: "${value}"`);
-                }
-            }
+            this.validateCell(col, value);
         });
     }
 }

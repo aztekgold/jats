@@ -146,6 +146,35 @@ describe("AgentableManager", () => {
         expect(view.hiddenColumns).not.toContain(col.id);
     });
 
+    it("should support onChange and setCell", () => {
+        const changes: any[] = [];
+        const manager = new AgentableManager(undefined, {
+            onChange: (schema, change) => {
+                changes.push(change);
+            }
+        });
+
+        const col = manager.addColumn({ name: "Age", type: "number" });
+        const row = manager.addRow({});
+
+        manager.setCell(row.id, col.id, 25);
+        expect(changes).toContainEqual({ type: "column.add", id: col.id });
+        expect(changes).toContainEqual({ type: "row.add", id: row.id });
+        expect(changes).toContainEqual({ type: "cell.update", id: row.id, columnId: col.id });
+        expect(manager.getAgentable().rows[0].cells[col.id]).toBe(25);
+    });
+
+    it("should duplicate rows", () => {
+        const manager = new AgentableManager();
+        const col = manager.addColumn({ name: "Name", type: "text" });
+        const row = manager.addRow({ [col.id]: "Original" });
+
+        const copy = manager.duplicateRow(row.id);
+        expect(copy.id).not.toBe(row.id);
+        expect(copy.cells[col.id]).toBe("Original");
+        expect(manager.getAgentable().rows).toHaveLength(2);
+    });
+
     it("should create views and handle sorts", () => {
         const manager = new AgentableManager();
         const col = manager.addColumn({ name: "Name", type: "text" });
